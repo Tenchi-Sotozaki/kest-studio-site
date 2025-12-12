@@ -1,11 +1,9 @@
 <template>
   <div>
-    <button @click="showComponent = !showComponent">
-      {{ showComponent ? '戻る' : 'KestStudioLPを表示' }}
-    </button>
+    <button @click="goToKestStudioLP">KestStudioLPへ</button>
 
-    <!-- 条件付きでコンポーネント表示 -->
-    <KestStudioLP v-if="showComponent" />
+    <!-- 表示切り替えも可能 -->
+    <KestStudioLP v-if="showLP" />
   </div>
 </template>
 
@@ -16,7 +14,12 @@ export default {
   components: { KestStudioLP },
   data() {
     return {
-      showComponent: false
+      showLP: false
+    }
+  },
+  methods: {
+    goToKestStudioLP() {
+      this.showLP = true
     }
   }
 }
