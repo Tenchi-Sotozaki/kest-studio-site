@@ -1,11 +1,25 @@
 <template>
-  <div id="app-root">
-    <KestStudioLP />
+  <div>
+    <button @click="showComponent = !showComponent">
+      {{ showComponent ? '戻る' : 'KestStudioLPを表示' }}
+    </button>
+
+    <!-- 条件付きでコンポーネント表示 -->
+    <KestStudioLP v-if="showComponent" />
   </div>
 </template>
 
-<script setup>
+<script>
 import KestStudioLP from './components/KestStudioLP.vue'
+
+export default {
+  components: { KestStudioLP },
+  data() {
+    return {
+      showComponent: false
+    }
+  }
+}
 </script>
 
 <style>
