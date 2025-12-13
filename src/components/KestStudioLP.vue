@@ -129,7 +129,7 @@ onUnmounted(() => {
 <template>
   <div class="kest-studio">
     <header class="header">
-      <div class="logo">Kest</div>
+      <div class="logo"></div>
       <nav class="nav">
         <a href="#portfolio">Works</a>
         <a href="#contact" @click="openContactModal($event)" class="btn-primary">Contact</a>
@@ -138,32 +138,31 @@ onUnmounted(() => {
 
     <section class="hero">
       <div class="hero-video-container">
-        <video ref="heroVideo" class="hero-video" loop muted playsinline
+        <img src="../assets/keat_homepage.jpeg" alt="overlay image" class="hero-image" />
+        <!-- <video ref="heroVideo" class="hero-video" loop muted playsinline
           poster="https://images.unsplash.com/photo-1487887235947-a955ef187fcc?auto=format&fit=crop&w=1920&q=80">
           <source src="https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-347-large.mp4"
             type="video/mp4">
           Your browser does not support the video tag.
-        </video>
-
+        </video> -->\
         <div class="hero-overlay">
           <h1 class="hero-title">
-            <span class="fade-in">Visualizing Value.</span><br>
-            <span class="fade-in delay">Inspiring Future.</span>
+            <span class="fade-in">Kest Sutidio</span><br>
+            <span class="fade-in delay line1">Journey to Inspiration,</span><br>
+            <span class="fade-in delay line2">Driven by Our Films</span>
           </h1>
-          <div class="hero-actions">
+          <!-- <div class="hero-actions">
             <button @click="toggleHeroVideo" class="play-toggle" aria-pressed="isHeroPlaying" aria-label="背景映像を再生/停止">
               {{ isHeroPlaying ? 'Pause Ambient' : 'Play Ambient' }}
-            </button>
-            <a href="#contact" class="btn-primary" style="margin-left:16px">Contact Us</a>
-          </div>
+            </button> -->
+          <!-- </div> -->
         </div>
       </div>
     </section>
-
     <section id="portfolio" class="portfolio">
       <div class="container">
         <div class="section-header">
-          <h2>Selected Works</h2>
+          <h2>Works</h2>
           <p>洗練された視点で、本質を。</p>
         </div>
 
@@ -191,14 +190,26 @@ onUnmounted(() => {
       <div class="container">
         <h2>Start Your Vision</h2>
         <p>あなたのブランドの価値を、共に可視化しましょう。</p>
+        <div class="mt-8 rounded-2xl bg-neutral-100 p-6 text-center">
+          <p class="mb-4 text-lg font-semibold tracking-wide text-neutral-800">
+            お問い合わせ
+          </p>
+          <div class="contact-actions">
+            <!-- 電話 -->
+            <div class="contact-btn contact-btn--primary" onclick="window.location.href='tel:+819064409072'">
+              090-6440-9072
+            </div>
 
-        <div class="contact-actions" style="margin-top:24px;">
-          <button class="btn-primary" @click="openContactModal($event)">お問い合わせフォーム</button>
-          <!-- <a class="btn-outline" href="tel:+819064409072" style="margin-left:12px">090-6440-9072</a>
-          <a style="margin-left:12px;color:var(--color-accent)"
-            href="mailto:keststudiohkd@gmail.com">keststudiohkd@gmail.com</a> -->
+            <!-- メール -->
+            <div class="contact-btn contact-btn--outline"
+              onclick="window.location.href='mailto:keststudiohkd@gmail.com'">
+              keststudiohkd@gmail.com
+            </div>
+          </div>
+
         </div>
       </div>
+
 
       <!-- モーダル（Vue 的に v-if で表示） -->
       <div v-if="isContactModalOpen" class="modal-backdrop" @click.self="closeContactModal" role="dialog"
@@ -210,7 +221,7 @@ onUnmounted(() => {
             <h3 style="margin-top:0">お問い合わせ</h3>
 
             <!-- フォーム：既存の submitContact を使う -->
-            <form class="contact-form" @submit.prevent="submitContact" novalidate>
+            <!-- <form class="contact-form" @submit.prevent="submitContact" novalidate>
               <label>
                 <span class="label">お名前</span>
                 <input type="text" v-model="contact.name" />
@@ -244,12 +255,9 @@ onUnmounted(() => {
               </div>
 
               <p class="form-note" v-if="submitSuccess">送信が完了しました。ありがとうございます。追ってご連絡いたします。</p>
-            </form>
+            </form> -->
 
-            <div style="margin-top:12px; font-size:0.9rem; color:var(--color-sub)">
-              直接メールする： <a href="mailto:keststudiohkd@gmail.com">keststudiohkd@gmail.com</a><br>
-              電話： <a href="tel:+819064409072">090-6440-9072</a>
-            </div>
+
           </div>
         </div>
       </div>
@@ -374,6 +382,10 @@ onUnmounted(() => {
   line-height: 1.1;
   margin-bottom: 32px;
   letter-spacing: -0.03em;
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
 .play-toggle {
@@ -696,4 +708,60 @@ onUnmounted(() => {
     padding: 20px;
   }
 }
+
+.hero-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.contact-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.contact-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 160px;      /* ← ここで横幅を統一 */
+  height: 48px;      /* ← 高さを統一 */
+
+  padding: 0 24px;   /* 高さ固定なので上下は不要 */
+  border-radius: 9999px;
+
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* 電話（塗り） */
+.contact-btn--primary {
+  background-color: #111;
+  color: #fff;
+}
+
+.contact-btn--primary:hover {
+  background-color: #444;
+}
+
+/* メール（枠） */
+.contact-btn--outline {
+  background: transparent;
+  border: 1px solid #111;
+  color: #111;
+}
+
+.contact-btn--outline:hover {
+  background-color: #e5e5e5;
+}
+
 </style>
