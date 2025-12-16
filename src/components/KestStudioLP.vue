@@ -135,7 +135,7 @@ onUnmounted(() => {
         <!-- <a href="#contact" @click="openContactModal($event)" class="btn-primary">Contact</a> -->
       </nav>
     </header>
-        <img src="../assets/keat_homepage.jpeg" alt="overlay image" class="hero-image" />
+        <img src="../../public/assets/keat_homepage.jpeg" alt="overlay image" class="hero-image" />
 
 
         <div class="hero">

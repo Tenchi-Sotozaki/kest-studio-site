@@ -3,7 +3,7 @@
     "id": "1",
     "title": "童心",
     "category": "Movie",
-    "thumbnail": "src/assets/doshin_thumbnail.jpeg",
+    "thumbnail": "assets/doshin_thumbnail.jpeg",
     "alt": "童心",
     "youtubeId": "jmck7bG3QCQ"
   },
@@ -11,7 +11,7 @@
     "id": "2",
     "title": "懐古",
     "category": "Movie",
-    "thumbnail": "src/assets/kaiko_thumbnail.jpeg",
+    "thumbnail": "assets/kaiko_thumbnail.jpeg",
     "alt": "懐古",
     "youtubeId": "qHzATTcr9UM"
   },
