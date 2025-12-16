@@ -145,7 +145,7 @@ onUnmounted(() => {
           <source src="https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-347-large.mp4"
             type="video/mp4">
           Your browser does not support the video tag.
-        </video> -->\
+        </video> -->
         <div class="hero-overlay">
           <h1 class="hero-title">
             <span class="fade-in">Kest Sutidio</span><br>
