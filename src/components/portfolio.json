@@ -19,7 +19,7 @@
     "id": "3",
     "title": "Human revo 旅予告動画",
     "category": "human filme",
-    "thumbnail": "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=800&q=80",
+    "thumbnail": "assets/trip_thumbnail.jpeg",
     "alt": "Human revo 旅予告動画",
     "youtubeId": "chEaIIt1F9U"
   },
@@ -27,7 +27,7 @@
     "id": "4",
     "title": "浅草おいも屋",
     "category": "PR",
-    "thumbnail": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80",
+    "thumbnail": "assets/oimo_thumbnail.jpeg",
     "alt": "浅草おいも屋",
     "youtubeId": "0oi3orSeFVQ"
   }
