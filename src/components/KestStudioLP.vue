@@ -132,13 +132,14 @@ onUnmounted(() => {
       <div class="logo"></div>
       <nav class="nav">
         <a href="#portfolio">Works</a>
-        <a href="#contact" @click="openContactModal($event)" class="btn-primary">Contact</a>
+        <!-- <a href="#contact" @click="openContactModal($event)" class="btn-primary">Contact</a> -->
       </nav>
     </header>
-
-    <section class="hero">
-      <div class="hero-video-container">
         <img src="../assets/keat_homepage.jpeg" alt="overlay image" class="hero-image" />
+
+
+        <div class="hero">
+      <div class="hero-video-container">
         <!-- <video ref="heroVideo" class="hero-video" loop muted playsinline
           poster="https://images.unsplash.com/photo-1487887235947-a955ef187fcc?auto=format&fit=crop&w=1920&q=80">
           <source src="https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-347-large.mp4"
@@ -158,7 +159,7 @@ onUnmounted(() => {
           <!-- </div> -->
         </div>
       </div>
-    </section>
+     </div>
     <section id="portfolio" class="portfolio">
       <div class="container">
         <div class="section-header">
@@ -197,13 +198,13 @@ onUnmounted(() => {
           <div class="contact-actions">
             <!-- 電話 -->
             <div class="contact-btn contact-btn--primary" onclick="window.location.href='tel:+819064409072'">
-              090-6440-9072
+              Tel:090-6440-9072
             </div>
 
             <!-- メール -->
             <div class="contact-btn contact-btn--outline"
               onclick="window.location.href='mailto:keststudiohkd@gmail.com'">
-              keststudiohkd@gmail.com
+              Email:keststudiohkd@gmail.com
             </div>
           </div>
 
@@ -345,13 +346,15 @@ onUnmounted(() => {
 
 .hero {
   position: relative;
-  height: 90vh;
+  height: 100vh;
+  min-height: 100svh;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
 }
 
 .hero-video-container {
@@ -729,7 +732,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
 
-  width: 160px;      /* ← ここで横幅を統一 */
+  width: 240px;      /* ← ここで横幅を統一 */
   height: 48px;      /* ← 高さを統一 */
 
   padding: 0 24px;   /* 高さ固定なので上下は不要 */
