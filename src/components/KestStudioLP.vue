@@ -374,19 +374,21 @@ onUnmounted(() => {
 }
 
 .hero-overlay {
-  position: relative;
+  position: absolute;
+  top: 48%;
+  left: 4%;
   z-index: 2;
   text-align: center;
 }
 
 .hero-title {
-  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-size: clamp(4rem, 6vw, 5rem);
   font-weight: 300;
   line-height: 1.1;
   margin-bottom: 32px;
   letter-spacing: -0.03em;
   font-family: 'Playfair Display', serif;
-  font-weight: 400;
+  font-weight: 600;
   color: rgba(255, 255, 255, 0.92);
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
