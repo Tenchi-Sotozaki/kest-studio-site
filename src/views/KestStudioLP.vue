@@ -178,7 +178,7 @@ const resetContact = () => {
         </video> -->
         <div class="hero-overlay">
           <h1 class="hero-title">
-            <span class="fade-in">Kest Sutidio</span>
+            <span class="fade-in">Kest Studio</span>
           </h1>
           <h2 class="hero-subtitle">
             <span class="fade-in delay line1">Journey to Inspiration,</span><br>
