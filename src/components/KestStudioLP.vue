@@ -148,10 +148,12 @@ onUnmounted(() => {
         </video> -->
         <div class="hero-overlay">
           <h1 class="hero-title">
-            <span class="fade-in">Kest Sutidio</span><br>
+            <span class="fade-in">Kest Sutidio</span>
+          </h1>  
+          <h2 class="hero-subtitle">
             <span class="fade-in delay line1">Journey to Inspiration,</span><br>
             <span class="fade-in delay line2">Driven by Our Films</span>
-          </h1>
+          </h2>
           <!-- <div class="hero-actions">
             <button @click="toggleHeroVideo" class="play-toggle" aria-pressed="isHeroPlaying" aria-label="背景映像を再生/停止">
               {{ isHeroPlaying ? 'Pause Ambient' : 'Play Ambient' }}
@@ -389,6 +391,18 @@ onUnmounted(() => {
   letter-spacing: -0.03em;
   font-family: 'Playfair Display', serif;
   font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.hero-subtitle {
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 200;
+  line-height: 1.1;
+  margin-bottom: 32px;
+  letter-spacing: -0.03em;
+  font-family: 'Playfair Display', serif;
+  font-weight: 500;
   color: rgba(255, 255, 255, 0.92);
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
