@@ -84,7 +84,7 @@
 
   <!-- Vue 起動後にローディングを消す -->
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('load', () => {
       const loader = document.getElementById('app-loading');
       if (loader) {
         loader.classList.add('is-hidden');
