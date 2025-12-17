@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import portfolioData from './portfolio.json';
+import portfolioData from '../components/portfolio.json';
 
 // --- State Management ---
 const isContactModalOpen = ref(false);
@@ -120,6 +120,17 @@ const submitContact = async () => {
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
 });
+onMounted(() => {
+  const header = document.querySelector('.header')
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 200) {
+      header.classList.add('is-visible')
+    } else {
+      header.classList.remove('is-visible')
+    }
+  })
+})
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
@@ -339,7 +350,14 @@ onUnmounted(() => {
   margin-left: 32px;
   font-size: 0.9rem;
   font-weight: 500;
-  transition: opacity 0.3s;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .6s ease;
+}
+
+.header.is-visible .nav a {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .nav a:hover {
