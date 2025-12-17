@@ -107,6 +107,13 @@ const submitContact = async () => {
       const body = encodeURIComponent(contact.value.message + '\n\nFrom: ' + contact.value.name + ' <' + contact.value.email + '>');
       window.location.href = `mailto:hello@keststudio.example?subject=${subject}&body=${body}`;
     }
+    if (res.ok) {
+      submitSuccess.value = true;
+      resetContact();
+      setTimeout(() => {
+        closeContactModal();
+      }, 1500);
+    }
   } catch (e) {
     const subject = encodeURIComponent('KestStudio Contact: ' + contact.value.name);
     const body = encodeURIComponent(contact.value.message + '\n\nFrom: ' + contact.value.name + ' <' + contact.value.email + '>');
@@ -135,6 +142,18 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
 });
+
+const resetContact = () => {
+  contact.value = {
+    name: '',
+    email: '',
+    message: '',
+    consent: false
+  };
+  contactErrors.value = {};
+  submitSuccess.value = false;
+};
+
 </script>
 
 <template>
@@ -143,14 +162,14 @@ onUnmounted(() => {
       <div class="logo"></div>
       <nav class="nav">
         <a href="#portfolio">Works</a>
-        <!-- <a href="#contact" @click="openContactModal($event)" class="btn-primary">Contact</a> -->
       </nav>
     </header>
+
+
+    <div class="hero">
+      <div class="hero-video-container">
         <img src="../../public/assets/keat_homepage.jpeg" alt="overlay image" class="hero-image" />
 
-
-        <div class="hero">
-      <div class="hero-video-container">
         <!-- <video ref="heroVideo" class="hero-video" loop muted playsinline
           poster="https://images.unsplash.com/photo-1487887235947-a955ef187fcc?auto=format&fit=crop&w=1920&q=80">
           <source src="https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-347-large.mp4"
@@ -160,7 +179,7 @@ onUnmounted(() => {
         <div class="hero-overlay">
           <h1 class="hero-title">
             <span class="fade-in">Kest Sutidio</span>
-          </h1>  
+          </h1>
           <h2 class="hero-subtitle">
             <span class="fade-in delay line1">Journey to Inspiration,</span><br>
             <span class="fade-in delay line2">Driven by Our Films</span>
@@ -172,7 +191,7 @@ onUnmounted(() => {
           <!-- </div> -->
         </div>
       </div>
-     </div>
+    </div>
     <section id="portfolio" class="portfolio">
       <div class="container">
         <div class="section-header">
@@ -209,11 +228,11 @@ onUnmounted(() => {
             お問い合わせ
           </p>
           <div class="contact-actions">
+            <a href="#contact" @click="openContactModal($event)" class="contact-btn btn-primary">Contact</a>
             <!-- 電話 -->
             <div class="contact-btn contact-btn--primary" onclick="window.location.href='tel:+819064409072'">
               Tel:090-6440-9072
             </div>
-
             <!-- メール -->
             <div class="contact-btn contact-btn--outline"
               onclick="window.location.href='mailto:keststudiohkd@gmail.com'">
@@ -235,7 +254,7 @@ onUnmounted(() => {
             <h3 style="margin-top:0">お問い合わせ</h3>
 
             <!-- フォーム：既存の submitContact を使う -->
-            <!-- <form class="contact-form" @submit.prevent="submitContact" novalidate>
+            <form class="contact-form" @submit.prevent="submitContact" novalidate>
               <label>
                 <span class="label">お名前</span>
                 <input type="text" v-model="contact.name" />
@@ -264,12 +283,12 @@ onUnmounted(() => {
                 <button type="submit" class="btn-primary large" :disabled="isSubmitting">
                   {{ isSubmitting ? '送信中...' : '送信する' }}
                 </button>
-                <button type="button" class="btn-outline"
-                  @click="() => { contact.name = ''; contact.email = ''; contact.message = ''; contact.consent = false; contactErrors = {}; }">リセット</button>
+                <button class="btn-primary" type="button" @click="resetContact">
+                  リセット
+                </button>
               </div>
-
               <p class="form-note" v-if="submitSuccess">送信が完了しました。ありがとうございます。追ってご連絡いたします。</p>
-            </form> -->
+            </form>
 
 
           </div>
@@ -766,10 +785,13 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
 
-  width: 240px;      /* ← ここで横幅を統一 */
-  height: 48px;      /* ← 高さを統一 */
+  width: 240px;
+  /* ← ここで横幅を統一 */
+  height: 48px;
+  /* ← 高さを統一 */
 
-  padding: 0 24px;   /* 高さ固定なので上下は不要 */
+  padding: 0 24px;
+  /* 高さ固定なので上下は不要 */
   border-radius: 9999px;
 
   font-size: 14px;
@@ -800,5 +822,4 @@ onUnmounted(() => {
 .contact-btn--outline:hover {
   background-color: #e5e5e5;
 }
-
 </style>
