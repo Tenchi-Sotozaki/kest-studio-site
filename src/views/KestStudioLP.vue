@@ -228,7 +228,7 @@ const resetContact = () => {
             お問い合わせ
           </p>
           <div class="contact-actions">
-            <a href="#contact" @click="openContactModal($event)" class="contact-btn btn-primary">Contact</a>
+            <div href="#contact" @click="openContactModal($event)" class="contact-btn contact-btn--form">Contact</div>
             <!-- 電話 -->
             <div class="contact-btn contact-btn--primary" onclick="window.location.href='tel:+819064409072'">
               Tel:090-6440-9072
@@ -820,6 +820,16 @@ const resetContact = () => {
 }
 
 .contact-btn--outline:hover {
+  background-color: #e5e5e5;
+}
+
+.contact-btn--form {
+  background-color: #148d3d;
+  color: #ffffff;
+  border: 1px solid #000000;
+}
+
+.contact-btn--form:hover {
   background-color: #e5e5e5;
 }
 </style>
