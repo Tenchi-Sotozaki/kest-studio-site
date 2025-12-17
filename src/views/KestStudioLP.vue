@@ -120,17 +120,17 @@ const submitContact = async () => {
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
 });
-onMounted(() => {
-  const header = document.querySelector('.header')
+// onMounted(() => {
+//   const header = document.querySelector('.header')
 
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 200) {
-      header.classList.add('is-visible')
-    } else {
-      header.classList.remove('is-visible')
-    }
-  })
-})
+//   window.addEventListener('scroll', () => {
+//     if (window.scrollY > 200) {
+//       header.classList.add('is-visible')
+//     } else {
+//       header.classList.remove('is-visible')
+//     }
+//   })
+// })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
