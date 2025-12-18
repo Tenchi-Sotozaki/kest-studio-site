@@ -224,11 +224,11 @@ const resetContact = () => {
         <h2>Start Your Vision</h2>
         <p>あなたのブランドの価値を、共に可視化しましょう。</p>
         <div class="mt-8 rounded-2xl bg-neutral-100 p-6 text-center">
-          <!-- <p class="mb-4 text-lg font-semibold tracking-wide text-neutral-800">
+          <p class="mb-4 text-lg font-semibold tracking-wide text-neutral-800">
             お問い合わせ
-          </p> -->
+          </p>
           <div class="contact-actions">
-            <div href="#contact" @click="openContactModal($event)" class="contact-btn contact-btn--form">Contact</div>
+            <!-- <div href="#contact" @click="openContactModal($event)" class="contact-btn contact-btn--form">Contact</div> -->
             <!-- 電話 -->
             <div class="contact-btn contact-btn--primary" onclick="window.location.href='tel:+819064409072'">
               Tel:090-6440-9072
