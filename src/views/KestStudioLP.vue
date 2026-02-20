@@ -6,9 +6,8 @@ import portfolioData from '../components/portfolio.json';
 const isContactModalOpen = ref(false);
 const isVideoModalOpen = ref(false);
 const currentVideoId = ref('');
-const modalTriggerElement = ref(null); // モーダルを閉じたあとにフォーカスを戻す要素
-const heroVideo = ref(null);
-const isHeroPlaying = ref(false);
+const modalTriggerElement = ref(null);
+const isScrolled = ref(false);
 
 // --- Contact Form State ---
 const contact = ref({ name: '', email: '', message: '', consent: false });
@@ -16,9 +15,7 @@ const contactErrors = ref({});
 const isSubmitting = ref(false);
 const submitSuccess = ref(false);
 
-
 // --- Methods ---
-// Video モーダルを開く
 const openVideoModal = (videoId, event) => {
   currentVideoId.value = videoId;
   isVideoModalOpen.value = true;
@@ -30,7 +27,6 @@ const openVideoModal = (videoId, event) => {
   document.body.style.overflow = 'hidden';
 };
 
-// Video モーダルを閉じる
 const closeVideoModal = () => {
   isVideoModalOpen.value = false;
   currentVideoId.value = '';
@@ -38,7 +34,6 @@ const closeVideoModal = () => {
   if (modalTriggerElement.value) modalTriggerElement.value.focus();
 };
 
-// Contact モーダルを開く
 const openContactModal = (event) => {
   isContactModalOpen.value = true;
   modalTriggerElement.value = event?.target || null;
@@ -49,15 +44,12 @@ const openContactModal = (event) => {
   document.body.style.overflow = 'hidden';
 };
 
-// Contact モーダルを閉じる
 const closeContactModal = () => {
   isContactModalOpen.value = false;
-  // contact 固有の状態をリセットしたければここで行う（今回は触らない）
   document.body.style.overflow = '';
   if (modalTriggerElement.value) modalTriggerElement.value.focus();
 };
 
-// キーボード: Escape は開いているモーダルを閉じる（動画優先）
 const handleKeydown = (e) => {
   if (e.key === 'Escape') {
     if (isVideoModalOpen.value) closeVideoModal();
@@ -65,15 +57,8 @@ const handleKeydown = (e) => {
   }
 };
 
-const toggleHeroVideo = () => {
-  if (!heroVideo.value) return;
-  if (heroVideo.value.paused) {
-    heroVideo.value.play();
-    isHeroPlaying.value = true;
-  } else {
-    heroVideo.value.pause();
-    isHeroPlaying.value = false;
-  }
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 50;
 };
 
 // --- Contact Form Helpers ---
@@ -85,6 +70,12 @@ const validateContact = () => {
   if (!contact.value.message.trim()) contactErrors.value.message = 'お問い合わせ内容を入力してください。';
   if (!contact.value.consent) contactErrors.value.consent = '個人情報の取り扱いに同意してください。';
   return Object.keys(contactErrors.value).length === 0;
+};
+
+const resetContact = () => {
+  contact.value = { name: '', email: '', message: '', consent: false };
+  contactErrors.value = {};
+  submitSuccess.value = false;
 };
 
 const submitContact = async () => {
@@ -101,23 +92,17 @@ const submitContact = async () => {
 
     if (res.ok) {
       submitSuccess.value = true;
-      contact.value = { name: '', email: '', message: '', consent: false };
-    } else {
-      const subject = encodeURIComponent('KestStudio Contact: ' + contact.value.name);
-      const body = encodeURIComponent(contact.value.message + '\n\nFrom: ' + contact.value.name + ' <' + contact.value.email + '>');
-      window.location.href = `mailto:hello@keststudio.example?subject=${subject}&body=${body}`;
-    }
-    if (res.ok) {
-      submitSuccess.value = true;
       resetContact();
       setTimeout(() => {
         closeContactModal();
       }, 1500);
+    } else {
+      throw new Error('API Error');
     }
   } catch (e) {
     const subject = encodeURIComponent('KestStudio Contact: ' + contact.value.name);
     const body = encodeURIComponent(contact.value.message + '\n\nFrom: ' + contact.value.name + ' <' + contact.value.email + '>');
-    window.location.href = `mailto:hello@keststudio.example?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:keststudiohkd@gmail.com?subject=${subject}&body=${body}`;
   } finally {
     isSubmitting.value = false;
   }
@@ -126,86 +111,75 @@ const submitContact = async () => {
 // --- Lifecycle ---
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
+  window.addEventListener('scroll', handleScroll);
 });
-// onMounted(() => {
-//   const header = document.querySelector('.header')
-
-//   window.addEventListener('scroll', () => {
-//     if (window.scrollY > 200) {
-//       header.classList.add('is-visible')
-//     } else {
-//       header.classList.remove('is-visible')
-//     }
-//   })
-// })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
+  window.removeEventListener('scroll', handleScroll);
 });
-
-const resetContact = () => {
-  contact.value = {
-    name: '',
-    email: '',
-    message: '',
-    consent: false
-  };
-  contactErrors.value = {};
-  submitSuccess.value = false;
-};
-
 </script>
 
 <template>
   <div class="kest-studio">
-    <header class="header">
-      <div class="logo"></div>
-      <nav class="nav">
-        <a href="#portfolio">Works</a>
-      </nav>
+<header :class="['header', { 'is-scrolled': isScrolled }]">
+      <div class="header-inner">
+        <div class="logo">Kest Studio</div>
+        <nav class="nav">
+          <a href="#portfolio">Works</a>
+          <a href="#contact">Contact</a>
+          <a href="https://www.instagram.com/kest_films/" target="_blank" rel="noopener noreferrer" class="nav-social">
+            <svg class="icon-insta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            <span>Instagram</span>
+          </a>
+        </nav>
+      </div>
     </header>
 
-
     <div class="hero">
-      <div class="hero-video-container">
-        <img src="../../public/assets/keat_homepage.jpeg" alt="overlay image" class="hero-image" />
-
-        <!-- <video ref="heroVideo" class="hero-video" loop muted playsinline
-          poster="https://images.unsplash.com/photo-1487887235947-a955ef187fcc?auto=format&fit=crop&w=1920&q=80">
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-347-large.mp4"
-            type="video/mp4">
-          Your browser does not support the video tag.
-        </video> -->
-        <div class="hero-overlay">
-          <h1 class="hero-title">
-            <span class="fade-in">Kest Studio</span>
-          </h1>
-          <h2 class="hero-subtitle">
-            <span class="fade-in delay line1">Journey to Inspiration,</span><br>
-            <span class="fade-in delay line2">Driven by Our Films</span>
-          </h2>
-          <!-- <div class="hero-actions">
-            <button @click="toggleHeroVideo" class="play-toggle" aria-pressed="isHeroPlaying" aria-label="背景映像を再生/停止">
-              {{ isHeroPlaying ? 'Pause Ambient' : 'Play Ambient' }}
-            </button> -->
-          <!-- </div> -->
-        </div>
+      <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+      </div>
+      <div class="hero-content">
+        <h1 class="hero-title">
+          <span class="fade-in">Kest Studio</span>
+        </h1>
+        <h2 class="hero-subtitle">
+          <span class="fade-in delay-1">Journey to Inspiration,</span><br>
+          <span class="fade-in delay-2">Driven by Our Films</span>
+        </h2>
+        <p class="hero-text fade-in delay-3">
+          洗練された視点で、本質を。
+        </p>
+      </div>
+      <div class="scroll-indicator fade-in delay-3">
+        <span>Scroll</span>
+        <div class="line"></div>
       </div>
     </div>
-    <section id="portfolio" class="portfolio">
+
+    <section id="portfolio" class="portfolio section">
       <div class="container">
-        <div class="section-header">
+        <div class="section-header fade-in-scroll">
           <h2>Works</h2>
-          <p>洗練された視点で、本質を。</p>
+          <p>私たちの手がけた映像作品</p>
         </div>
 
         <div class="grid">
           <article v-for="item in portfolioData" :key="item.id" class="card">
-            <div class="card-thumb" @click="(e) => openVideoModal(item.youtubeId, e)" tabindex="0"
-              @keydown.enter="(e) => openVideoModal(item.youtubeId, e)">
+            <div 
+              class="card-thumb" 
+              @click="(e) => openVideoModal(item.youtubeId, e)" 
+              tabindex="0"
+              @keydown.enter="(e) => openVideoModal(item.youtubeId, e)"
+              :aria-label="`${item.title}の動画を再生する`"
+            >
               <img :src="item.thumbnail" :alt="item.alt" loading="lazy" width="800" height="450" />
               <div class="card-overlay">
-                <span class="play-icon">▶</span>
+                <div class="play-button">
+                  <svg viewBox="0 0 24 24" fill="currentColor" class="play-icon"><path d="M8 5v14l11-7z"/></svg>
+                </div>
               </div>
             </div>
             <div class="card-info">
@@ -214,107 +188,101 @@ const resetContact = () => {
             </div>
           </article>
         </div>
-
       </div>
     </section>
 
-    <!-- Contact セクション（Vue テンプレート用・モーダルは v-if） -->
-    <section id="contact" class="contact">
+<section id="contact" class="contact section">
       <div class="container">
-        <h2>Start Your Vision</h2>
-        <p>あなたのブランドの価値を、共に可視化しましょう。</p>
-        <div class="mt-8 rounded-2xl bg-neutral-100 p-6 text-center">
-          <p class="mb-4 text-lg font-semibold tracking-wide text-neutral-800">
-            お問い合わせ
-          </p>
+        <div class="contact-box">
+          <h2 class="contact-title">Start Your Vision</h2>
+          <p class="contact-desc">あなたのブランドの価値を、共に可視化しましょう。<br>まずはお気軽にご相談ください。</p>
+          
           <div class="contact-actions">
-            <!-- <div href="#contact" @click="openContactModal($event)" class="contact-btn contact-btn--form">Contact</div> -->
-            <!-- 電話 -->
-            <div class="contact-btn contact-btn--primary" onclick="window.location.href='tel:+819064409072'">
-              Tel:090-6440-9072
-            </div>
-            <!-- メール -->
-            <div class="contact-btn contact-btn--outline"
-              onclick="window.location.href='mailto:keststudiohkd@gmail.com'">
-              Email:keststudiohkd@gmail.com
-            </div>
-          </div>
+            <button @click="openContactModal" class="btn btn-primary">
+              Webからのお問い合わせ
+            </button>
+            
+            <a href="https://www.instagram.com/kest_films/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-insta">
+              <svg class="icon-insta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+              @kest_films
+            </a>
 
+            <a href="tel:+819064409072" class="btn btn-outline">
+              Tel: 090-6440-9072
+            </a>
+            <a href="mailto:keststudiohkd@gmail.com" class="btn btn-outline">
+              Email: keststudiohkd@gmail.com
+            </a>
+          </div>
         </div>
       </div>
+    </section>
 
+    <footer class="footer">
+      <p>&copy; {{ new Date().getFullYear() }} Kest Studio. All Rights Reserved.</p>
+    </footer>
 
-      <!-- モーダル（Vue 的に v-if で表示） -->
-      <div v-if="isContactModalOpen" class="modal-backdrop" @click.self="closeContactModal" role="dialog"
-        aria-modal="true">
-        <div class="modal-content" role="document" style="background:var(--color-bg); color:var(--color-text);">
-          <button class="modal-close-btn modal-close-btn--contact" @click="closeContactModal"
-            aria-label="閉じる">✕</button>
-          <div class="video-wrapper" style="padding:24px; background:var(--color-bg); color:var(--color-text);">
-            <h3 style="margin-top:0">お問い合わせ</h3>
-
-            <!-- フォーム：既存の submitContact を使う -->
+    <Transition name="fade">
+      <div v-if="isContactModalOpen" class="modal-backdrop" @click.self="closeContactModal" role="dialog" aria-modal="true">
+        <div class="modal-content modal-content--contact">
+          <button class="modal-close-btn modal-close-btn--contact" @click="closeContactModal" aria-label="閉じる">✕</button>
+          
+          <div class="modal-body">
+            <h3>お問い合わせ</h3>
+            <p class="modal-sub">プロジェクトのご相談やご質問など、お気軽にお問い合わせください。</p>
+            
             <form class="contact-form" @submit.prevent="submitContact" novalidate>
-              <label>
-                <span class="label">お名前</span>
-                <input type="text" v-model="contact.name" />
+              <div class="form-group">
+                <label>お名前</label>
+                <input type="text" v-model="contact.name" placeholder="山田 太郎" />
                 <span class="error" v-if="contactErrors.name">{{ contactErrors.name }}</span>
-              </label>
+              </div>
 
-              <label>
-                <span class="label">メールアドレス</span>
-                <input type="email" v-model="contact.email" />
+              <div class="form-group">
+                <label>メールアドレス</label>
+                <input type="email" v-model="contact.email" placeholder="example@keststudio.com" />
                 <span class="error" v-if="contactErrors.email">{{ contactErrors.email }}</span>
-              </label>
+              </div>
 
-              <label>
-                <span class="label">お問い合わせ内容</span>
-                <textarea v-model="contact.message" rows="5"></textarea>
+              <div class="form-group">
+                <label>お問い合わせ内容</label>
+                <textarea v-model="contact.message" rows="5" placeholder="ご相談内容をご記入ください"></textarea>
                 <span class="error" v-if="contactErrors.message">{{ contactErrors.message }}</span>
-              </label>
+              </div>
 
-              <label class="consent">
+              <label class="consent-label">
                 <input type="checkbox" v-model="contact.consent" />
-                <span>個人情報の取り扱いに同意します。</span>
+                <span><a href="#" class="link">個人情報の取り扱い</a>に同意します。</span>
               </label>
               <span class="error" v-if="contactErrors.consent">{{ contactErrors.consent }}</span>
 
               <div class="form-actions">
-                <button type="submit" class="btn-primary large" :disabled="isSubmitting">
+                <button type="submit" class="btn btn-primary btn-block" :disabled="isSubmitting">
                   {{ isSubmitting ? '送信中...' : '送信する' }}
                 </button>
-                <button class="btn-primary" type="button" @click="resetContact">
-                  リセット
-                </button>
               </div>
-              <p class="form-note" v-if="submitSuccess">送信が完了しました。ありがとうございます。追ってご連絡いたします。</p>
+              <Transition name="fade">
+                <div class="success-message" v-if="submitSuccess">
+                  送信が完了しました。追ってご連絡いたします。
+                </div>
+              </Transition>
             </form>
-
-
           </div>
         </div>
       </div>
-    </section>
-
-
-    <footer class="footer">
-      <p>&copy; 2025 KestStudio. All Rights Reserved.</p>
-    </footer>
+    </Transition>
 
     <Transition name="fade">
-      <div v-if="isVideoModalOpen" class="modal-backdrop" @click.self="closeVideoModal" role="dialog" aria-modal="true"
-        aria-labelledby="modal-title">
-        <div class="modal-content">
-          <button class="modal-close-btn modal-close-btn--video" @click="closeVideoModal" aria-label="閉じる">
-            ×
-          </button>
-
+      <div v-if="isVideoModalOpen" class="modal-backdrop" @click.self="closeVideoModal" role="dialog" aria-modal="true">
+        <div class="modal-content modal-content--video">
+          <button class="modal-close-btn modal-close-btn--video" @click="closeVideoModal" aria-label="閉じる">✕</button>
           <div class="video-wrapper">
-            <iframe v-if="currentVideoId" width="560" height="315"
+            <iframe v-if="currentVideoId" 
               :src="`https://www.youtube-nocookie.com/embed/${currentVideoId}?autoplay=1&rel=0`"
               title="YouTube video player" frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen></iframe>
+              allowfullscreen>
+            </iframe>
           </div>
         </div>
       </div>
@@ -323,20 +291,32 @@ const resetContact = () => {
 </template>
 
 <style scoped>
-/* --- Base Variables & Reset (Simulated :root for scoped) --- */
+/* --- Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+
+/* --- Design Tokens & Resets --- */
 .kest-studio {
-  --color-bg: #FFFFFF;
-  --color-text: #111111;
-  --color-accent: #4CAF50;
-  /* 指定グリーン */
-  --color-sub: #666;
-  --color-border: #E5E5E5;
-  --font-sans: 'Helvetica Neue', Arial, sans-serif;
+  /* 暖かみのある白を基調としたカラーパレット */
+  --color-bg: #FCFAF8; /* エクリュ/ウォームホワイト */
+  --color-surface: #FFFFFF;
+  --color-text: #33312E; /* 柔らかいチャコールグレー */
+  --color-text-mut: #8A857D;
+  --color-border: #E8E5DF;
+  --color-accent: #B0A392; /* 上品なグレージュ */
+  --color-accent-hover: #968A79;
+  
+  --font-sans: 'Zen Kaku Gothic New', sans-serif;
+  --font-serif: 'Cormorant Garamond', serif;
+  
   font-family: var(--font-sans);
   color: var(--color-text);
   background-color: var(--color-bg);
-  line-height: 1.6;
+  line-height: 1.7;
   -webkit-font-smoothing: antialiased;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 .container {
@@ -345,373 +325,461 @@ const resetContact = () => {
   padding: 0 24px;
 }
 
+.section {
+  padding: 140px 0;
+}
+
+/* --- Typography --- */
+h1, h2, h3 {
+  margin: 0;
+  line-height: 1.3;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 72px;
+}
+
+.section-header h2 {
+  font-size: 3rem;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  margin-bottom: 16px;
+  color: var(--color-text);
+}
+
+.section-header p {
+  color: var(--color-text-mut);
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+}
+
+/* --- Header --- */
 .header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 50;
+  transition: all 0.4s ease;
+  padding: 24px 0;
+}
+
+.header.is-scrolled {
+  background-color: rgba(252, 250, 248, 0.9);
+  backdrop-filter: blur(8px);
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.header-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 40px;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: 10;
-  box-sizing: border-box;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 40px;
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
 }
 
 .nav a {
   text-decoration: none;
   color: var(--color-text);
-  margin-left: 32px;
-  font-size: 0.9rem;
+  margin-left: 40px;
+  font-size: 0.95rem;
   font-weight: 500;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .6s ease;
-}
-
-.header.is-visible .nav a {
-  opacity: 1;
-  pointer-events: auto;
+  letter-spacing: 0.05em;
+  transition: color 0.3s ease, opacity 0.3s ease;
 }
 
 .nav a:hover {
-  opacity: 0.6;
+  color: var(--color-accent);
 }
 
+.nav-social {
+  position: relative;
+  padding-left: 24px;
+}
+
+.nav-social::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 14px;
+  background-color: var(--color-border);
+}
+
+/* --- Hero (Typographic & Warm) --- */
 .hero {
   position: relative;
   height: 100vh;
-  min-height: 100svh;
-  width: 100%;
+  min-height: 700px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   overflow: hidden;
-  margin: 0;
-  padding: 0;
+  background-color: var(--color-bg);
 }
 
-.hero-video-container {
+/* 背景のふんわりとしたグラデーションオーブ */
+.hero-bg-shapes {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: float 20s infinite ease-in-out alternate;
+}
+
+.shape-1 {
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, #EBE3D5 0%, transparent 70%);
+  top: -10%;
+  left: -10%;
+}
+
+.shape-2 {
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, #E1D9CD 0%, transparent 70%);
+  bottom: -10%;
+  right: -10%;
+  animation-delay: -10s;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(5%, 10%) scale(1.1); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 0 24px;
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 400;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+.hero-subtitle {
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 300;
+  color: var(--color-text-mut);
+  line-height: 1.4;
+  font-style: italic;
+  margin-bottom: 32px;
+}
+
+.hero-text {
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  color: var(--color-text-mut);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
+
+.scroll-indicator .line {
+  width: 1px;
+  height: 60px;
+  background-color: var(--color-text-mut);
+  margin-top: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.scroll-indicator .line::after {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background-color: var(--color-text);
+  animation: scrollLine 2s infinite cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-.hero-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.8;
-  /* テキストの視認性確保 */
+@keyframes scrollLine {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
 }
 
-.hero-overlay {
-  position: absolute;
-  top: 48%;
-  left: 4%;
-  z-index: 2;
-  text-align: center;
-}
-
-.hero-title {
-  font-size: clamp(4rem, 6vw, 5rem);
-  font-weight: 300;
-  line-height: 1.1;
-  margin-bottom: 32px;
-  letter-spacing: -0.03em;
-  font-family: 'Playfair Display', serif;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
-}
-
-.hero-subtitle {
-  font-size: clamp(3rem, 6vw, 5rem);
-  font-weight: 200;
-  line-height: 1.1;
-  margin-bottom: 32px;
-  letter-spacing: -0.03em;
-  font-family: 'Playfair Display', serif;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
-}
-
-.play-toggle {
-  background: transparent;
-  border: 1px solid var(--color-text);
-  padding: 12px 24px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  transition: all 0.3s ease;
-}
-
-.play-toggle:hover {
-  background: var(--color-text);
-  color: var(--color-bg);
-}
-
-.fade-in {
-  opacity: 0;
-  animation: fadeIn 1s forwards;
-}
-
-.delay {
-  animation-delay: 0.5s;
-}
-
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-
-.portfolio {
-  padding: 120px 0;
-}
-
-.section-header {
-  margin-bottom: 60px;
-  text-align: center;
-}
-
-.section-header h2 {
-  font-size: 2rem;
-  margin-bottom: 16px;
-  font-weight: 400;
-}
-
-.section-header p {
-  color: var(--color-sub);
-}
-
+/* --- Portfolio Grid --- */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 56px 40px;
 }
 
 .card {
   cursor: pointer;
+  group: hover;
 }
 
 .card-thumb {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 16/9;
-  background-color: #eee;
+  border-radius: 4px;
+  aspect-ratio: 16 / 9;
+  background-color: #EAEAEA;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+  transition: box-shadow 0.4s ease;
+}
+
+.card:hover .card-thumb {
+  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
 }
 
 .card-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-  display: block;
+  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .card:hover .card-thumb img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
 .card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(51, 49, 46, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.4s ease;
 }
 
 .card:hover .card-overlay {
   opacity: 1;
 }
 
+.play-button {
+  width: 72px;
+  height: 72px;
+  background: rgba(252, 250, 248, 0.95);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.9);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card:hover .play-button {
+  transform: scale(1);
+}
+
 .play-icon {
-  color: white;
-  font-size: 2rem;
+  width: 24px;
+  height: 24px;
+  color: var(--color-text);
+  margin-left: 4px;
 }
 
 .card-info {
-  margin-top: 16px;
+  margin-top: 24px;
+  text-align: center;
 }
 
 .category {
   font-size: 0.75rem;
-  color: var(--color-accent);
+  color: var(--color-text-mut);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 700;
+  letter-spacing: 0.15em;
+  font-weight: 500;
+  margin-bottom: 8px;
   display: block;
-  margin-bottom: 4px;
 }
 
 .card-info h3 {
-  font-size: 1.25rem;
-  font-weight: 400;
-  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
 }
 
+/* --- Contact Section --- */
 .contact {
-  padding: 120px 0;
-  background-color: #f9f9f9;
+  background-color: var(--color-surface);
+}
+
+.contact-box {
+  background-color: var(--color-bg);
+  border-radius: 2px; /* 少しシャープにしてモダンに */
+  padding: 100px 40px;
   text-align: center;
+  border: 1px solid var(--color-border);
 }
 
-.contact h2 {
-  font-size: 2.5rem;
-  margin-bottom: 16px;
-  font-weight: 300;
+.contact-title {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  margin-bottom: 24px;
+  font-weight: 400;
 }
 
-.contact p {
-  margin-bottom: 32px;
-  color: var(--color-sub);
+.contact-desc {
+  color: var(--color-text-mut);
+  margin-bottom: 56px;
+  font-size: 1.05rem;
+  line-height: 1.8;
 }
 
-.contact-grid {
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 32px;
-  align-items: start;
+.contact-actions {
+  display: flex;
   justify-content: center;
-  margin-top: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.contact-card {
-  text-align: left;
-  padding: 24px;
-  background: white;
-  border: 1px solid var(--color-border);
-}
-
-.contact-card h3 {
-  margin-top: 0;
-}
-
-.contact-form {
-  text-align: left;
-  background: white;
-  padding: 24px;
-  border: 1px solid var(--color-border);
-}
-
-.contact-form label {
-  display: block;
-  margin-bottom: 12px;
-}
-
-.contact-form .label {
-  display: block;
-  font-size: 0.9rem;
-  margin-bottom: 8px;
-}
-
-.contact-form input,
-.contact-form textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  box-sizing: border-box;
-}
-
-.contact-form textarea {
-  resize: vertical;
-}
-
-.error {
-  color: #D32F2F;
-  font-size: 0.85rem;
-  margin-top: 6px;
-  display: block;
-}
-
-.small {
-  color: var(--color-sub);
-  font-size: 0.9rem;
-}
-
-.consent {
-  display: flex;
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin: 12px 0;
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-top: 16px;
+  justify-content: center;
+  height: 56px;
+  padding: 0 40px;
+  border-radius: 0; /* 四角いボタンで洗練された印象に */
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 240px;
 }
 
 .btn-primary {
-  background-color: var(--color-accent);
-  color: white !important;
-  padding: 12px 32px;
-  border: none;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-  display: inline-block;
+  background-color: var(--color-text);
+  color: var(--color-bg);
+  border: 1px solid var(--color-text);
 }
 
 .btn-primary:hover {
-  background-color: #388E3C;
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #FFF;
 }
 
 .btn-outline {
-  border: none;
+  background-color: transparent;
   color: var(--color-text);
-  padding: 10px 20px;
+  border: 1px solid var(--color-border);
 }
 
-.form-note {
-  margin-top: 12px;
-  color: #2E7D32;
+.btn-outline:hover {
+  border-color: var(--color-text);
 }
 
-.footer {
-  padding: 40px 0;
-  text-align: center;
-  border-top: 1px solid var(--color-border);
-  font-size: 0.8rem;
-  color: var(--color-sub);
+.btn-block {
+  width: 100%;
 }
 
+/* --- Modals --- */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(51, 49, 46, 0.8);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
+  padding: 24px;
 }
 
 .modal-content {
   position: relative;
-  width: 90%;
-  max-width: 960px;
-  aspect-ratio: 16/9;
-  background: black;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  background: var(--color-bg);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modal-content--video {
+  max-width: 1000px;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.modal-content--contact {
+  max-width: 600px;
+  padding: 64px 48px;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+  z-index: 10;
+}
+
+.modal-close-btn--video {
+  color: #FFF;
+}
+
+.modal-close-btn--contact {
+  color: var(--color-text-mut);
+}
+
+.modal-close-btn:hover {
+  transform: rotate(90deg);
 }
 
 .video-wrapper {
@@ -724,20 +792,113 @@ const resetContact = () => {
   height: 100%;
 }
 
-.modal-close-btn {
-  position: absolute;
-  top: -40px;
-  right: -10px;
-  background: none;
-  border: none;
-  font-size: 2rem;
-  cursor: pointer;
-  color: var(--color-text);
+/* --- Form Styles --- */
+.modal-body h3 {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  text-align: center;
 }
 
+.modal-sub {
+  color: var(--color-text-mut);
+  margin-bottom: 40px;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 32px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-text);
+  letter-spacing: 0.05em;
+}
+
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form textarea {
+  width: 100%;
+  padding: 16px 0;
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  color: var(--color-text);
+  transition: border-color 0.3s;
+}
+
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+  color: #C2BFBA;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-bottom-color: var(--color-text);
+}
+
+.consent-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 32px;
+  color: var(--color-text-mut);
+}
+
+.consent-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-text);
+}
+
+.link {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.error {
+  color: #C15151;
+  font-size: 0.8rem;
+  margin-top: 8px;
+  display: block;
+}
+
+.success-message {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #F1F4F0;
+  color: #4C6546;
+  text-align: center;
+  font-weight: 500;
+  border: 1px solid #DCE3DA;
+}
+
+/* --- Footer --- */
+.footer {
+  padding: 40px 0 60px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-mut);
+  letter-spacing: 0.05em;
+}
+
+/* --- Animations --- */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.5s ease;
 }
 
 .fade-enter-from,
@@ -745,91 +906,131 @@ const resetContact = () => {
   opacity: 0;
 }
 
-@media (max-width: 1024px) {
-  .contact-grid {
-    grid-template-columns: 1fr;
+.fade-in {
+  opacity: 0;
+  animation: fadeInUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.delay-1 { animation-delay: 0.2s; }
+.delay-2 { animation-delay: 0.4s; }
+.delay-3 { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+/* --- Responsive --- */
 @media (max-width: 768px) {
+  .header-inner {
+    padding: 0 24px;
+  }
+  
+  .nav a {
+    margin-left: 20px;
+    font-size: 0.85rem;
+  }
+  
+  .nav-social {
+    display: none; /* スマホのヘッダーは狭いので非表示、下部のボタンへ誘導 */
+  }
+
   .hero-title {
-    font-size: 2.5rem;
+    font-size: 3.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.5rem;
+  }
+  
+  .section {
+    padding: 80px 0;
   }
 
   .grid {
     grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .contact-box {
+    padding: 64px 24px;
   }
 
-  .header {
-    padding: 20px;
+  .contact-title {
+    font-size: 2.2rem;
+  }
+
+  .contact-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .modal-content--contact {
+    padding: 40px 24px;
   }
 }
 
-.hero-image {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.icon-insta {
+  width: 1.2em;
+  height: 1.2em;
+  transition: transform 0.3s ease;
 }
 
-.contact-actions {
+/* ヘッダーのSNSリンク */
+.nav-social {
   display: flex;
-  justify-content: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.contact-btn {
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-
-  width: 240px;
-  /* ← ここで横幅を統一 */
-  height: 48px;
-  /* ← 高さを統一 */
-
-  padding: 0 24px;
-  /* 高さ固定なので上下は不要 */
-  border-radius: 9999px;
-
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  user-select: none;
-
-  transition: background-color 0.2s ease, color 0.2s ease;
+  gap: 8px;
+  position: relative;
+  padding-left: 24px;
 }
 
-/* 電話（塗り） */
-.contact-btn--primary {
-  background-color: #111;
-  color: #fff;
+.nav-social::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 14px;
+  background-color: var(--color-border);
 }
 
-.contact-btn--primary:hover {
-  background-color: #444;
+.nav-social:hover .icon-insta {
+  transform: scale(1.1);
+  color: var(--color-accent);
 }
 
-/* メール（枠） */
-.contact-btn--outline {
-  background: transparent;
-  border: 1px solid #111;
-  color: #111;
+/* Instagramボタンの装飾 */
+.btn-insta {
+  gap: 10px;
 }
 
-.contact-btn--outline:hover {
-  background-color: #e5e5e5;
+.btn-insta:hover .icon-insta {
+  transform: rotate(-10deg) scale(1.1);
 }
 
-.contact-btn--form {
-  background-color: #148d3d;
-  color: #ffffff;
-  border: 1px solid #000000;
-}
-
-.contact-btn--form:hover {
-  background-color: #e5e5e5;
+/* スマホ表示の微調整 */
+@media (max-width: 768px) {
+  .nav-social span {
+    display: none; /* スマホではテキストを隠してアイコンのみにする */
+  }
+  .nav-social {
+    padding-left: 16px;
+  }
+  .btn-insta .icon-insta {
+    width: 1.4em;
+    height: 1.4em;
+  }
 }
 </style>
