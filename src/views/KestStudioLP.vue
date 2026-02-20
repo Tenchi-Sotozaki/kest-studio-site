@@ -143,7 +143,7 @@ onUnmounted(() => {
       </div>
       <div class="hero-content">
         <h1 class="hero-title">
-          <span class="fade-in">Kest Studio</span>
+          <span class="fade-in">Kest Films</span>
         </h1>
         <h2 class="hero-subtitle">
           <span class="fade-in delay-1">Journey to Inspiration,</span><br>
@@ -219,7 +219,7 @@ onUnmounted(() => {
     </section>
 
     <footer class="footer">
-      <p>&copy; {{ new Date().getFullYear() }} Kest Studio. All Rights Reserved.</p>
+      <p>&copy; {{ new Date().getFullYear() }} Kest Films. All Rights Reserved.</p>
     </footer>
 
     <Transition name="fade">
