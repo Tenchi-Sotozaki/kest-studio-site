@@ -9,6 +9,42 @@ const currentVideoId = ref('');
 const modalTriggerElement = ref(null);
 const isScrolled = ref(false);
 
+const fontList = [
+  "'Cormorant Garamond', serif",            // エレガント（明朝）
+  "'Zen Kaku Gothic New', sans-serif",      // モダン（ゴシック）
+  "Arial, Helvetica, sans-serif",           // スタンダード
+  "'Times New Roman', Times, serif",        // クラシック
+  "'Courier New', Courier, monospace",      // タイプライター調
+  "Georgia, serif",                         // 美しいセリフ体
+  "Verdana, Geneva, sans-serif",            // 力強いゴシック
+  "'Trebuchet MS', Helvetica, sans-serif",  // スタイリッシュ
+  "Impact, Charcoal, sans-serif",           // 極太
+  "'Arial Black', Gadget, sans-serif",      // ポップな極太
+  "'Palatino Linotype', 'Book Antiqua', Palatino, serif", // オールドスタイル
+  "'Lucida Sans Unicode', 'Lucida Grande', sans-serif",
+  "Tahoma, Geneva, sans-serif",
+  "'Lucida Console', Monaco, monospace",    // プログラミングコード風
+  "Garamond, serif",
+  "'Comic Sans MS', cursive, sans-serif",   // コミック風
+  "'Brush Script MT', cursive",             // 筆記体
+  "Baskerville, 'Baskerville Old Face', serif",
+  "Optima, sans-serif",                     // セリフとサンセリフの中間
+  "'Bodoni MT', Didot, 'Didot LT STD', serif", // ファッション誌風
+  "Copperplate, 'Copperplate Gothic Light', fantasy", // レトロ・銅版画風
+  "Papyrus, fantasy",                       // 古代風
+  "'Century Gothic', sans-serif",           // 幾何学的
+  "Consolas, monaco, monospace",            
+  "Cambria, Georgia, serif",
+  "Candara, Calibri, sans-serif",
+  "'Franklin Gothic Medium', 'Arial Narrow', sans-serif",
+  "Futura, 'Trebuchet MS', Arial, sans-serif", // モダンジオメトリック
+  "Rockwell, 'Courier Bold', Courier, Georgia, Times, 'Times New Roman', serif", // スラブセリフ（太いヒゲ）
+  "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+];
+
+const currentHeroFont = ref(fontList[0]);
+let fontInterval = null;
+
 // --- Contact Form State ---
 const contact = ref({ name: '', email: '', message: '', consent: false });
 const contactErrors = ref({});
@@ -112,17 +148,36 @@ const submitContact = async () => {
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
   window.addEventListener('scroll', handleScroll);
+
+  let lastIndex = 0;
+  fontInterval = setInterval(() => {
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * fontList.length);
+    } while (randomIndex === lastIndex);
+    
+    lastIndex = randomIndex;
+    currentHeroFont.value = fontList[randomIndex];
+  }, 100); // 0.1秒ごとにフォントを変更
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
   window.removeEventListener('scroll', handleScroll);
+
+  if (fontInterval) clearInterval(fontInterval);
 });
 </script>
 
 <template>
   <div class="kest-studio">
     <div class="noise-overlay"></div>
+
+    <div class="yuba-bg">
+      <div class="yuba-shape shape-1"></div>
+      <div class="yuba-shape shape-2"></div>
+      <div class="yuba-shape shape-3"></div>
+    </div>
 
     <header :class="['header', { 'is-scrolled': isScrolled }]">
       <div class="header-inner">
@@ -140,21 +195,22 @@ onUnmounted(() => {
 
     <div class="hero">
       <div class="hero-content">
-        <h1 class="hero-title fade-in">
-          Kest Studio
+        <h1 class="hero-title fade-in" :style="{ fontFamily: currentHeroFont }">
+        Kest Studio
         </h1>
-        <h2 class="hero-subtitle fade-in delay-1">
-          温もりとインスピレーションを<br>
-          あなたのブランドに。
-        </h2>
-        <p class="hero-text fade-in delay-2">
-          洗練された視点で本質を捉え、<br>
-          記憶に焼き付く映像を創り出します。
-        </p>
       </div>
       <div class="scroll-indicator fade-in delay-3">
-        <div class="line"></div>
-        <span>scroll</span>
+        <div class="scroll-ring">
+          <svg viewBox="0 0 100 100" class="ring-svg">
+            <path id="textPath" d="M 50, 50 m -40, 0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" fill="none" />
+            <text fill="#FFFFFF" font-size="11" font-weight="700" letter-spacing="0.1em">
+              <textPath href="#textPath" startOffset="0" textLength="250">
+                SCROLL DOWN • SCROLL DOWN • 
+              </textPath>
+            </text>
+          </svg>
+          <div class="scroll-line-center"></div>
+        </div>
       </div>
     </div>
 
@@ -318,13 +374,80 @@ onUnmounted(() => {
   
   font-family: var(--font-sans);
   color: var(--color-text-light);
-  background: linear-gradient(135deg, var(--color-grad-start) 0%, var(--color-grad-end) 100%);
-  background-attachment: fixed; /* スクロールしてもグラデーションを固定 */
   line-height: 1.8;
   letter-spacing: 0.04em;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   position: relative;
+  background-color: var(--color-grad-start); /* フォールバック */
+}
+
+/* --- Yuppa-style Yuba Background (オーガニックレイヤー) --- */
+.yuba-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0; /* 最背面 */
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--color-grad-start) 0%, var(--color-grad-end) 100%);
+}
+
+.yuba-shape {
+  position: absolute;
+  animation: morphYuba 20s ease-in-out infinite both alternate;
+  transform-origin: center center;
+}
+
+/* 幾重にも重なる生湯葉の層を表現 */
+.shape-1 {
+  width: 120vw;
+  height: 120vw;
+  top: -40%;
+  left: -20%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.02));
+  backdrop-filter: blur(8px); /* 重なり合う部分の透け感を表現 */
+  animation-delay: 0s;
+  animation-duration: 25s;
+}
+
+.shape-2 {
+  width: 100vw;
+  height: 100vw;
+  bottom: -30%;
+  right: -20%;
+  background: linear-gradient(135deg, rgba(232, 122, 67, 0.4), rgba(255, 155, 106, 0.2));
+  animation-delay: -5s;
+  animation-duration: 22s;
+}
+
+.shape-3 {
+  width: 80vw;
+  height: 80vw;
+  top: 20%;
+  left: 30%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 200, 150, 0.15));
+  animation-delay: -10s;
+  animation-duration: 18s;
+}
+
+@keyframes morphYuba {
+  0% {
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    transform: rotate(0deg) scale(1);
+  }
+  34% {
+    border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%;
+    transform: rotate(45deg) scale(1.05);
+  }
+  67% {
+    border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%;
+    transform: rotate(90deg) scale(0.95);
+  }
+  100% {
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    transform: rotate(135deg) scale(1);
+  }
 }
 
 /* --- Noise Effect (フィルムノイズ) --- */
@@ -336,7 +459,7 @@ onUnmounted(() => {
   height: 100vh;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.15; /* ノイズの強さ */
+  opacity: 0.15;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
@@ -349,6 +472,12 @@ onUnmounted(() => {
   max-width: 1100px;
   margin: 0 auto;
   padding: 0 24px;
+}
+
+/* --- コンテンツのZ-Indexを背景の上に固定 --- */
+.hero, .section, .footer {
+  position: relative;
+  z-index: 1;
 }
 
 .section {
@@ -471,7 +600,6 @@ h1, h2, h3 {
 
 /* --- Hero --- */
 .hero {
-  position: relative;
   height: 100vh;
   min-height: 700px;
   display: flex;
@@ -488,7 +616,6 @@ h1, h2, h3 {
 }
 
 .hero-title {
-  font-family: var(--font-en);
   font-size: clamp(4rem, 10vw, 7rem);
   font-weight: 700;
   margin-bottom: 24px;
@@ -496,64 +623,65 @@ h1, h2, h3 {
   text-shadow: 0 4px 24px rgba(232, 122, 67, 0.4);
 }
 
-.hero-subtitle {
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 700;
-  line-height: 1.6;
-  margin-bottom: 24px;
-  text-shadow: 0 2px 12px rgba(232, 122, 67, 0.3);
-}
-
-.hero-text {
-  font-size: 1.1rem;
-  font-weight: 500;
-  line-height: 2;
-  opacity: 0.95;
-}
-
-/* Scroll Indicator */
+/* --- Scroll Indicator (回転する円形テキスト) --- */
 .scroll-indicator {
   position: absolute;
-  bottom: 40px;
+  bottom: 32px;
   left: 50%;
-  transform: translateX(-50%);
+  margin-left: -60px; /* transformの代わりに、幅の半分(60px)をマイナスしてど真ん中に固定 */
+  z-index: 10;
+  width: 120px;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  justify-content: center;
 }
 
-.scroll-indicator span {
-  font-family: var(--font-en);
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.scroll-indicator .line {
-  width: 2px;
-  height: 60px;
-  background-color: rgba(255, 255, 255, 0.3);
+.scroll-ring {
   position: relative;
-  overflow: hidden;
-  border-radius: 2px;
+  width: 120px;
+  height: 120px;
 }
 
-.scroll-indicator .line::after {
+.ring-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  animation: rotateText 14s linear infinite;
+}
+
+.scroll-line-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* コンテナの完全な中央に配置 */
+  width: 1px;
+  height: 48px;
+  background-color: transparent;
+  overflow: hidden;
+}
+
+.scroll-line-center::after {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #FFFFFF;
-  animation: scrollDrop 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  background-color: #FFFFFF; /* 中心の落ちる線 */
+  animation: scrollDropCenter 2.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
-@keyframes scrollDrop {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(100%); }
+@keyframes rotateText {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes scrollDropCenter {
+  0% { transform: translateY(-100%); opacity: 0; }
+  20% { opacity: 1; }
+  80% { transform: translateY(100%); opacity: 0; }
+  100% { transform: translateY(100%); opacity: 0; }
 }
 
 /* --- Portfolio Grid --- */
@@ -914,16 +1042,6 @@ h1, h2, h3 {
   border-radius: 12px;
   text-align: center;
   font-weight: 700;
-}
-
-/* --- Footer --- */
-.footer {
-  padding: 0 0 80px;
-  text-align: center;
-  font-family: var(--font-en);
-  font-size: 1rem;
-  font-weight: 600;
-  opacity: 0.9;
 }
 
 /* --- Animations --- */
