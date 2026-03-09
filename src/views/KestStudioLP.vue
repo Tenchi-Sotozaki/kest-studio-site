@@ -122,9 +122,11 @@ onUnmounted(() => {
 
 <template>
   <div class="kest-studio">
-<header :class="['header', { 'is-scrolled': isScrolled }]">
+    <div class="noise-overlay"></div>
+
+    <header :class="['header', { 'is-scrolled': isScrolled }]">
       <div class="header-inner">
-        <div class="logo">Kest Films</div>
+        <div class="logo">Kest Studio</div>
         <nav class="nav">
           <a href="#portfolio">Works</a>
           <a href="#contact">Contact</a>
@@ -137,33 +139,30 @@ onUnmounted(() => {
     </header>
 
     <div class="hero">
-      <div class="hero-bg-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-      </div>
       <div class="hero-content">
-        <h1 class="hero-title">
-          <span class="fade-in">Kest Films</span>
+        <h1 class="hero-title fade-in">
+          Kest Studio
         </h1>
-        <h2 class="hero-subtitle">
-          <span class="fade-in delay-1">Journey to Inspiration,</span><br>
-          <span class="fade-in delay-2">Driven by Our Films</span>
+        <h2 class="hero-subtitle fade-in delay-1">
+          温もりとインスピレーションを<br>
+          あなたのブランドに。
         </h2>
-        <p class="hero-text fade-in delay-3">
-          洗練された視点で、本質を。
+        <p class="hero-text fade-in delay-2">
+          洗練された視点で本質を捉え、<br>
+          記憶に焼き付く映像を創り出します。
         </p>
       </div>
       <div class="scroll-indicator fade-in delay-3">
-        <span>Scroll</span>
         <div class="line"></div>
+        <span>scroll</span>
       </div>
     </div>
 
     <section id="portfolio" class="portfolio section">
       <div class="container">
         <div class="section-header fade-in-scroll">
-          <h2>Works</h2>
-          <p>私たちの手がけた映像作品</p>
+          <span class="sub-title">Our Works</span>
+          <h2>手がけた映像</h2>
         </div>
 
         <div class="grid">
@@ -191,45 +190,47 @@ onUnmounted(() => {
       </div>
     </section>
 
-<section id="contact" class="contact section">
+    <section id="contact" class="contact section">
       <div class="container">
         <div class="contact-box">
-          <h2 class="contact-title">Start Your Vision</h2>
-          <p class="contact-desc">あなたのブランドの価値を、共に可視化しましょう。<br>まずはお気軽にご相談ください。</p>
-          
-          <div class="contact-actions">
-            <button @click="openContactModal" class="btn btn-primary">
-              Webからのお問い合わせ
-            </button>
+          <div class="contact-box-inner">
+            <h2 class="contact-title">Start Your Vision</h2>
+            <p class="contact-desc">
+              あなたのアイデアを、形にする準備はできていますか？<br>
+              まずはお気軽にお話ししてみましょう。
+            </p>
             
-            <a href="https://www.instagram.com/kest_films/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-insta">
-              <svg class="icon-insta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-              @kest_films
-            </a>
+            <div class="contact-actions">
+              <button @click="openContactModal" class="btn btn-primary">
+                Webからのお問い合わせ
+              </button>
+              
+              <a href="https://www.instagram.com/kest_films/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-insta">
+                <svg class="icon-insta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                Instagram (@kest_films)
+              </a>
 
-            <a href="tel:+819064409072" class="btn btn-outline">
-              Tel: 090-6440-9072
-            </a>
-            <a href="mailto:keststudiohkd@gmail.com" class="btn btn-outline">
-              Email: keststudiohkd@gmail.com
-            </a>
+              <a href="tel:+819064409072" class="btn btn-outline">
+                Tel: 090-6440-9072
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <footer class="footer">
-      <p>&copy; {{ new Date().getFullYear() }} Kest Films. All Rights Reserved.</p>
+      <p>&copy; {{ new Date().getFullYear() }} Kest Studio. All Rights Reserved.</p>
     </footer>
 
-    <Transition name="fade">
+    <Transition name="fade-modal">
       <div v-if="isContactModalOpen" class="modal-backdrop" @click.self="closeContactModal" role="dialog" aria-modal="true">
         <div class="modal-content modal-content--contact">
           <button class="modal-close-btn modal-close-btn--contact" @click="closeContactModal" aria-label="閉じる">✕</button>
           
           <div class="modal-body">
             <h3>お問い合わせ</h3>
-            <p class="modal-sub">プロジェクトのご相談やご質問など、お気軽にお問い合わせください。</p>
+            <p class="modal-sub">プロジェクトのご相談やご質問など、お気軽にご連絡ください。</p>
             
             <form class="contact-form" @submit.prevent="submitContact" novalidate>
               <div class="form-group">
@@ -240,7 +241,7 @@ onUnmounted(() => {
 
               <div class="form-group">
                 <label>メールアドレス</label>
-                <input type="email" v-model="contact.email" placeholder="example@keststudio.com" />
+                <input type="email" v-model="contact.email" placeholder="hello@example.com" />
                 <span class="error" v-if="contactErrors.email">{{ contactErrors.email }}</span>
               </div>
 
@@ -252,7 +253,7 @@ onUnmounted(() => {
 
               <label class="consent-label">
                 <input type="checkbox" v-model="contact.consent" />
-                <span><a href="#" class="link">個人情報の取り扱い</a>に同意します。</span>
+                <span><a href="#" class="link">プライバシーポリシー</a>に同意する</span>
               </label>
               <span class="error" v-if="contactErrors.consent">{{ contactErrors.consent }}</span>
 
@@ -272,7 +273,7 @@ onUnmounted(() => {
       </div>
     </Transition>
 
-    <Transition name="fade">
+    <Transition name="fade-modal">
       <div v-if="isVideoModalOpen" class="modal-backdrop" @click.self="closeVideoModal" role="dialog" aria-modal="true">
         <div class="modal-content modal-content--video">
           <button class="modal-close-btn modal-close-btn--video" @click="closeVideoModal" aria-label="閉じる">✕</button>
@@ -291,28 +292,53 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* --- Fonts --- */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
 
 /* --- Design Tokens & Resets --- */
 .kest-studio {
-  /* 暖かみのある白を基調としたカラーパレット */
-  --color-bg: #FCFAF8; /* エクリュ/ウォームホワイト */
-  --color-surface: #FFFFFF;
-  --color-text: #33312E; /* 柔らかいチャコールグレー */
-  --color-text-mut: #8A857D;
-  --color-border: #E8E5DF;
-  --color-accent: #B0A392; /* 上品なグレージュ */
-  --color-accent-hover: #968A79;
+  /* 薄めたくすみオレンジ（テラコッタ〜アプリコット）のグラデーション */
+  --color-grad-start: #FF9B6A; 
+  --color-grad-end: #E87A43;
+
+  /* アクセントカラーも全体に馴染むオレンジに */
+  --color-accent: #E87A43; 
+  --color-accent-hover: #D6652D;
+  
+  /* Organic Earth (ディープオリーブ) の表面色 */
+  --color-surface: #2E3526;
+  --color-border: #4C5741;
+  
+  /* 文字色 */
+  --color-text-light: #FFFFFF;    /* 背景がオレンジの時の文字色 */
+  --color-text-surface: #EAF0E1;  /* ディープオリーブ背景の上の文字色（淡いグリーン系の白） */
+  --color-text-mut: #8B997B;      /* サブテキスト用（くすんだセージグリーン） */
   
   --font-sans: 'Zen Kaku Gothic New', sans-serif;
-  --font-serif: 'Cormorant Garamond', serif;
+  --font-en: 'Cormorant Garamond', serif;
   
   font-family: var(--font-sans);
-  color: var(--color-text);
-  background-color: var(--color-bg);
-  line-height: 1.7;
+  color: var(--color-text-light);
+  background: linear-gradient(135deg, var(--color-grad-start) 0%, var(--color-grad-end) 100%);
+  background-attachment: fixed; /* スクロールしてもグラデーションを固定 */
+  line-height: 1.8;
+  letter-spacing: 0.04em;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* --- Noise Effect (フィルムノイズ) --- */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.15; /* ノイズの強さ */
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 *, *::before, *::after {
@@ -320,7 +346,7 @@ onUnmounted(() => {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -332,7 +358,7 @@ onUnmounted(() => {
 /* --- Typography --- */
 h1, h2, h3 {
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.4;
 }
 
 .section-header {
@@ -340,24 +366,28 @@ h1, h2, h3 {
   margin-bottom: 72px;
 }
 
-.section-header h2 {
-  font-size: 3rem;
-  font-family: var(--font-serif);
-  font-weight: 400;
-  margin-bottom: 16px;
-  color: var(--color-text);
+.sub-title {
+  display: block;
+  font-family: var(--font-en);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  margin-bottom: 12px;
+  opacity: 0.9;
 }
 
-.section-header p {
-  color: var(--color-text-mut);
-  font-size: 1.05rem;
-  letter-spacing: 0.08em;
+.section-header h2 {
+  font-family: var(--font-sans);
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
 }
 
 /* --- Header --- */
 .header {
   position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
   z-index: 50;
   transition: all 0.4s ease;
@@ -365,10 +395,10 @@ h1, h2, h3 {
 }
 
 .header.is-scrolled {
-  background-color: rgba(252, 250, 248, 0.9);
-  backdrop-filter: blur(8px);
+  background-color: rgba(46, 53, 38, 0.95); /* ディープオリーブに透過 */
+  color: var(--color-text-surface);
+  box-shadow: 0 4px 24px rgba(20, 26, 15, 0.4);
   padding: 16px 0;
-  border-bottom: 1px solid var(--color-border);
 }
 
 .header-inner {
@@ -381,49 +411,65 @@ h1, h2, h3 {
 }
 
 .logo {
-  font-family: var(--font-serif);
+  font-family: var(--font-en);
   font-size: 1.8rem;
-  font-weight: 600;
-  color: var(--color-text);
+  font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.header.is-scrolled .logo {
+  color: var(--color-accent); /* スクロール時はロゴをオレンジにして際立たせる */
 }
 
 .nav {
   display: flex;
   align-items: center;
+  gap: 40px;
 }
 
 .nav a {
   text-decoration: none;
-  color: var(--color-text);
-  margin-left: 40px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-  transition: color 0.3s ease, opacity 0.3s ease;
+  color: inherit;
+  font-family: var(--font-en);
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: opacity 0.3s ease;
 }
 
 .nav a:hover {
-  color: var(--color-accent);
+  opacity: 0.7;
 }
 
 .nav-social {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   position: relative;
-  padding-left: 24px;
 }
 
 .nav-social::before {
   content: '';
   position: absolute;
-  left: 0;
+  left: -20px;
   top: 50%;
   transform: translateY(-50%);
   width: 1px;
-  height: 14px;
-  background-color: var(--color-border);
+  height: 16px;
+  background-color: currentColor;
+  opacity: 0.4;
 }
 
-/* --- Hero (Typographic & Warm) --- */
+.icon-insta {
+  width: 1.2em;
+  height: 1.2em;
+  transition: transform 0.3s ease;
+}
+
+.nav-social:hover .icon-insta {
+  transform: scale(1.1);
+}
+
+/* --- Hero --- */
 .hero {
   position: relative;
   height: 100vh;
@@ -433,47 +479,6 @@ h1, h2, h3 {
   align-items: center;
   justify-content: center;
   text-align: center;
-  overflow: hidden;
-  background-color: var(--color-bg);
-}
-
-/* 背景のふんわりとしたグラデーションオーブ */
-.hero-bg-shapes {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.shape {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.4;
-  animation: float 20s infinite ease-in-out alternate;
-}
-
-.shape-1 {
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle, #EBE3D5 0%, transparent 70%);
-  top: -10%;
-  left: -10%;
-}
-
-.shape-2 {
-  width: 50vw;
-  height: 50vw;
-  background: radial-gradient(circle, #E1D9CD 0%, transparent 70%);
-  bottom: -10%;
-  right: -10%;
-  animation-delay: -10s;
-}
-
-@keyframes float {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(5%, 10%) scale(1.1); }
 }
 
 .hero-content {
@@ -483,29 +488,27 @@ h1, h2, h3 {
 }
 
 .hero-title {
-  font-family: var(--font-serif);
-  font-size: clamp(4rem, 10vw, 8rem);
-  font-weight: 400;
+  font-family: var(--font-en);
+  font-size: clamp(4rem, 10vw, 7rem);
+  font-weight: 700;
   margin-bottom: 24px;
-  letter-spacing: -0.02em;
-  color: var(--color-text);
+  letter-spacing: 0.02em;
+  text-shadow: 0 4px 24px rgba(232, 122, 67, 0.4);
 }
 
 .hero-subtitle {
-  font-family: var(--font-serif);
-  font-size: clamp(1.8rem, 4vw, 3rem);
-  font-weight: 300;
-  color: var(--color-text-mut);
-  line-height: 1.4;
-  font-style: italic;
-  margin-bottom: 32px;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  text-shadow: 0 2px 12px rgba(232, 122, 67, 0.3);
 }
 
 .hero-text {
-  font-size: 1rem;
-  letter-spacing: 0.1em;
-  color: var(--color-text);
+  font-size: 1.1rem;
   font-weight: 500;
+  line-height: 2;
+  opacity: 0.95;
 }
 
 /* Scroll Indicator */
@@ -517,19 +520,24 @@ h1, h2, h3 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 2;
-  color: var(--color-text-mut);
-  font-size: 0.8rem;
+  gap: 12px;
+}
+
+.scroll-indicator span {
+  font-family: var(--font-en);
+  font-size: 0.9rem;
+  font-weight: 700;
   letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .scroll-indicator .line {
-  width: 1px;
+  width: 2px;
   height: 60px;
-  background-color: var(--color-text-mut);
-  margin-top: 16px;
+  background-color: rgba(255, 255, 255, 0.3);
   position: relative;
   overflow: hidden;
+  border-radius: 2px;
 }
 
 .scroll-indicator .line::after {
@@ -539,11 +547,11 @@ h1, h2, h3 {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--color-text);
-  animation: scrollLine 2s infinite cubic-bezier(0.65, 0, 0.35, 1);
+  background-color: #FFFFFF;
+  animation: scrollDrop 2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
-@keyframes scrollLine {
+@keyframes scrollDrop {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100%); }
 }
@@ -552,48 +560,50 @@ h1, h2, h3 {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 56px 40px;
+  gap: 40px 32px;
 }
 
 .card {
   cursor: pointer;
-  group: hover;
+  background: var(--color-surface);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(20, 26, 15, 0.4); /* 暗い背景用の深いシャドウ */
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 24px 56px rgba(20, 26, 15, 0.6);
 }
 
 .card-thumb {
   position: relative;
+  aspect-ratio: 16 / 9; 
+  background-color: #1E2419; /* より深いオリーブグリーン */
   overflow: hidden;
-  border-radius: 4px;
-  aspect-ratio: 16 / 9;
-  background-color: #EAEAEA;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-  transition: box-shadow 0.4s ease;
-}
-
-.card:hover .card-thumb {
-  box-shadow: 0 15px 40px rgba(0,0,0,0.08);
 }
 
 .card-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.6s ease;
 }
 
 .card:hover .card-thumb img {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
 .card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(51, 49, 46, 0.2);
+  background: rgba(46, 53, 38, 0.4); /* ディープオリーブのオーバーレイ */
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
 }
 
 .card:hover .card-overlay {
@@ -601,15 +611,16 @@ h1, h2, h3 {
 }
 
 .play-button {
-  width: 72px;
-  height: 72px;
-  background: rgba(252, 250, 248, 0.95);
+  width: 64px;
+  height: 64px;
+  background: var(--color-accent);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: scale(0.9);
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  color: #FFFFFF;
+  transform: scale(0.8);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .card:hover .play-button {
@@ -619,49 +630,53 @@ h1, h2, h3 {
 .play-icon {
   width: 24px;
   height: 24px;
-  color: var(--color-text);
   margin-left: 4px;
 }
 
 .card-info {
-  margin-top: 24px;
-  text-align: center;
+  padding: 24px;
+  text-align: left;
 }
 
 .category {
-  font-size: 0.75rem;
-  color: var(--color-text-mut);
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-weight: 500;
+  font-family: var(--font-en);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 0.1em;
   margin-bottom: 8px;
   display: block;
 }
 
 .card-info h3 {
   font-size: 1.2rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
+  font-weight: 700;
+  color: var(--color-text-surface);
 }
 
 /* --- Contact Section --- */
-.contact {
-  background-color: var(--color-surface);
+.contact-box {
+  display: flex;
+  justify-content: center;
 }
 
-.contact-box {
-  background-color: var(--color-bg);
-  border-radius: 2px; /* 少しシャープにしてモダンに */
-  padding: 100px 40px;
+.contact-box-inner {
+  max-width: 900px;
+  width: 100%;
   text-align: center;
-  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-surface);
+  padding: 80px 64px;
+  border-radius: 24px;
+  box-shadow: 0 24px 64px rgba(20, 26, 15, 0.4);
 }
 
 .contact-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-en);
   font-size: 3rem;
   margin-bottom: 24px;
-  font-weight: 400;
+  font-weight: 700;
+  color: var(--color-accent);
 }
 
 .contact-desc {
@@ -678,43 +693,48 @@ h1, h2, h3 {
   flex-wrap: wrap;
 }
 
-/* --- Buttons --- */
+/* --- Bold Buttons --- */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 56px;
+  height: 60px;
   padding: 0 40px;
-  border-radius: 0; /* 四角いボタンで洗練された印象に */
-  font-size: 0.95rem;
-  font-weight: 500;
-  letter-spacing: 0.05em;
+  border-radius: 100px;
+  font-size: 1rem;
+  font-weight: 700;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s ease;
-  min-width: 240px;
+  min-width: 260px;
 }
 
 .btn-primary {
-  background-color: var(--color-text);
-  color: var(--color-bg);
-  border: 1px solid var(--color-text);
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  border: none;
+  box-shadow: 0 8px 24px rgba(232, 122, 67, 0.25);
 }
 
 .btn-primary:hover {
-  background-color: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #FFF;
+  background-color: var(--color-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(232, 122, 67, 0.35);
 }
 
 .btn-outline {
   background-color: transparent;
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  color: var(--color-accent);
+  border: 2px solid var(--color-border);
 }
 
 .btn-outline:hover {
-  border-color: var(--color-text);
+  border-color: var(--color-accent);
+  background-color: #3A4230; /* ホバー時は暗いオリーブグリーンに */
+}
+
+.btn-insta {
+  gap: 8px;
 }
 
 .btn-block {
@@ -725,8 +745,8 @@ h1, h2, h3 {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(51, 49, 46, 0.8);
-  backdrop-filter: blur(10px);
+  background: rgba(20, 26, 15, 0.85); /* モーダル背景もオーガニックに暗く */
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -737,15 +757,18 @@ h1, h2, h3 {
 .modal-content {
   position: relative;
   width: 100%;
-  background: var(--color-bg);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
+  background: var(--color-surface);
+  color: var(--color-text-surface);
+  border-radius: 24px;
   overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
 }
 
 .modal-content--video {
   max-width: 1000px;
   aspect-ratio: 16 / 9;
   background: #000;
+  border-radius: 16px;
 }
 
 .modal-content--contact {
@@ -755,31 +778,35 @@ h1, h2, h3 {
 
 .modal-close-btn {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 24px;
+  right: 24px;
   width: 48px;
   height: 48px;
-  background: transparent;
+  background: #1E2419;
   border: none;
+  border-radius: 50%;
   font-size: 1.5rem;
+  color: var(--color-text-surface);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s;
+  transition: all 0.3s;
   z-index: 10;
 }
 
+.modal-close-btn:hover {
+  background: var(--color-border);
+  transform: rotate(90deg);
+}
+
 .modal-close-btn--video {
+  background: rgba(255, 255, 255, 0.2);
   color: #FFF;
 }
 
-.modal-close-btn--contact {
-  color: var(--color-text-mut);
-}
-
-.modal-close-btn:hover {
-  transform: rotate(90deg);
+.modal-close-btn--video:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .video-wrapper {
@@ -794,84 +821,86 @@ h1, h2, h3 {
 
 /* --- Form Styles --- */
 .modal-body h3 {
-  font-size: 2.5rem;
-  margin-bottom: 16px;
-  font-family: var(--font-serif);
-  font-weight: 400;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-accent);
   text-align: center;
+  margin-bottom: 16px;
 }
 
 .modal-sub {
   color: var(--color-text-mut);
-  margin-bottom: 40px;
-  font-size: 0.95rem;
+  margin-bottom: 48px;
   text-align: center;
+  font-size: 0.95rem;
 }
 
 .form-group {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .form-group label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   margin-bottom: 8px;
-  color: var(--color-text);
-  letter-spacing: 0.05em;
+  color: var(--color-text-surface);
 }
 
 .contact-form input[type="text"],
 .contact-form input[type="email"],
 .contact-form textarea {
   width: 100%;
-  padding: 16px 0;
-  background-color: transparent;
-  border: none;
-  border-bottom: 1px solid var(--color-border);
+  padding: 16px 20px;
+  background-color: #1E2419; /* 入力欄は背景よりさらに一段暗く */
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
   font-family: var(--font-sans);
   font-size: 1rem;
-  color: var(--color-text);
-  transition: border-color 0.3s;
+  color: var(--color-text-surface);
+  transition: all 0.3s;
 }
 
 .contact-form input::placeholder,
 .contact-form textarea::placeholder {
-  color: #C2BFBA;
+  color: #6A7A5A; /* プレースホルダーの文字色調整 */
 }
 
 .contact-form input:focus,
 .contact-form textarea:focus {
   outline: none;
-  border-bottom-color: var(--color-text);
+  background-color: var(--color-surface);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(232, 122, 67, 0.15);
 }
 
 .consent-label {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   cursor: pointer;
   margin-bottom: 32px;
   color: var(--color-text-mut);
 }
 
 .consent-label input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
-  accent-color: var(--color-text);
+  accent-color: var(--color-accent);
 }
 
 .link {
-  color: var(--color-text);
+  color: var(--color-accent);
   text-decoration: underline;
   text-underline-offset: 4px;
 }
 
 .error {
-  color: #C15151;
-  font-size: 0.8rem;
+  color: #FF5E5E; /* 暗い背景でも目立つ赤に調整 */
+  font-size: 0.85rem;
+  font-weight: 700;
   margin-top: 8px;
   display: block;
 }
@@ -879,31 +908,34 @@ h1, h2, h3 {
 .success-message {
   margin-top: 24px;
   padding: 16px;
-  background-color: #F1F4F0;
-  color: #4C6546;
+  background-color: #242A1D;
+  color: var(--color-accent);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
   text-align: center;
-  font-weight: 500;
-  border: 1px solid #DCE3DA;
+  font-weight: 700;
 }
 
 /* --- Footer --- */
 .footer {
-  padding: 40px 0 60px;
+  padding: 0 0 80px;
   text-align: center;
-  font-size: 0.85rem;
-  color: var(--color-text-mut);
-  letter-spacing: 0.05em;
+  font-family: var(--font-en);
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.9;
 }
 
 /* --- Animations --- */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
+.fade-modal-enter-active,
+.fade-modal-leave-active {
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.fade-modal-enter-from,
+.fade-modal-leave-to {
   opacity: 0;
+  transform: scale(0.95) translateY(20px);
 }
 
 .fade-in {
@@ -911,19 +943,13 @@ h1, h2, h3 {
   animation: fadeInUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-.delay-1 { animation-delay: 0.2s; }
-.delay-2 { animation-delay: 0.4s; }
-.delay-3 { animation-delay: 0.6s; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
 
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- Responsive --- */
@@ -932,13 +958,20 @@ h1, h2, h3 {
     padding: 0 24px;
   }
   
-  .nav a {
-    margin-left: 20px;
-    font-size: 0.85rem;
+  .nav {
+    gap: 24px;
   }
   
-  .nav-social {
-    display: none; /* スマホのヘッダーは狭いので非表示、下部のボタンへ誘導 */
+  .nav a:not(.nav-social) {
+    display: none;
+  }
+  
+  .nav-social::before {
+    display: none;
+  }
+  
+  .nav-social span {
+    display: none;
   }
 
   .hero-title {
@@ -946,20 +979,16 @@ h1, h2, h3 {
   }
   
   .hero-subtitle {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
   
   .section {
     padding: 80px 0;
   }
-
-  .grid {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
   
-  .contact-box {
-    padding: 64px 24px;
+  .contact-box-inner {
+    padding: 56px 24px;
+    border-radius: 20px;
   }
 
   .contact-title {
@@ -977,60 +1006,6 @@ h1, h2, h3 {
 
   .modal-content--contact {
     padding: 40px 24px;
-  }
-}
-
-.icon-insta {
-  width: 1.2em;
-  height: 1.2em;
-  transition: transform 0.3s ease;
-}
-
-/* ヘッダーのSNSリンク */
-.nav-social {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-  padding-left: 24px;
-}
-
-.nav-social::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1px;
-  height: 14px;
-  background-color: var(--color-border);
-}
-
-.nav-social:hover .icon-insta {
-  transform: scale(1.1);
-  color: var(--color-accent);
-}
-
-/* Instagramボタンの装飾 */
-.btn-insta {
-  gap: 10px;
-}
-
-.btn-insta:hover .icon-insta {
-  transform: rotate(-10deg) scale(1.1);
-}
-
-/* スマホ表示の微調整 */
-@media (max-width: 768px) {
-  .nav-social span {
-    display: none; /* スマホではテキストを隠してアイコンのみにする */
-  }
-  .nav-social {
-    padding-left: 16px;
-  }
-  .btn-insta .icon-insta {
-    width: 1.4em;
-    height: 1.4em;
   }
 }
 </style>
