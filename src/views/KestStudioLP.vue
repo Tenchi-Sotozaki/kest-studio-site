@@ -114,16 +114,29 @@ const resetContact = () => {
   submitSuccess.value = false;
 };
 
+const encode = (data) => {
+  return Object.keys(data)
+    .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+    .join("&");
+};
+
+// 👇 送信処理をNetlify仕様に書き換え
 const submitContact = async () => {
   if (!validateContact()) return;
   isSubmitting.value = true;
   submitSuccess.value = false;
 
   try {
-    const res = await fetch('/api/contact', {
+    // Netlify Formsの仕様に合わせて送信
+    const res = await fetch('/', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(contact.value),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: encode({
+        'form-name': 'contact', // ここで「contact」という名前のフォームに送信すると指定
+        name: contact.value.name,
+        email: contact.value.email,
+        message: contact.value.message,
+      }),
     });
 
     if (res.ok) {
@@ -136,6 +149,7 @@ const submitContact = async () => {
       throw new Error('API Error');
     }
   } catch (e) {
+    // エラー時は自動でメールソフトを起動する（予備のフォールバック）
     const subject = encodeURIComponent('KestStudio Contact: ' + contact.value.name);
     const body = encodeURIComponent(contact.value.message + '\n\nFrom: ' + contact.value.name + ' <' + contact.value.email + '>');
     window.location.href = `mailto:keststudiohkd@gmail.com?subject=${subject}&body=${body}`;
