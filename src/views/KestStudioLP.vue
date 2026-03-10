@@ -266,10 +266,8 @@ onUnmounted(() => {
       <div class="container">
         <div class="contact-box">
           <div class="contact-box-inner">
-            <h2 class="contact-title">Start Your Vision</h2>
+            <h2 class="contact-title">Contact</h2>
             <p class="contact-desc">
-              あなたのアイデアを、形にする準備はできていますか？<br>
-              まずはお気軽にお話ししてみましょう。
             </p>
             
             <div class="contact-actions">
@@ -345,17 +343,29 @@ onUnmounted(() => {
       </div>
     </Transition>
 
-    <Transition name="fade-modal">
+<Transition name="fade-modal">
       <div v-if="isVideoModalOpen" class="modal-backdrop" @click.self="closeVideoModal" role="dialog" aria-modal="true">
-        <div class="modal-content modal-content--video">
+        <div class="modal-content modal-content--video crt-tv">
           <button class="modal-close-btn modal-close-btn--video" @click="closeVideoModal" aria-label="閉じる">✕</button>
-          <div class="video-wrapper">
-            <iframe v-if="currentVideoId" 
-              :src="`https://www.youtube-nocookie.com/embed/${currentVideoId}?autoplay=1&rel=0`"
-              title="YouTube video player" frameborder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen>
-            </iframe>
+          
+          <div class="crt-casing">
+            <div class="crt-screen-bezel">
+              <div class="crt-glass"></div>
+              <div class="video-wrapper">
+                <iframe v-if="currentVideoId" 
+                  :src="`https://www.youtube-nocookie.com/embed/${currentVideoId}?autoplay=1&rel=0`"
+                  title="YouTube video player" frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen>
+                </iframe>
+              </div>
+            </div>
+            
+            <div class="crt-panel">
+              <div class="crt-dial"></div>
+              <div class="crt-dial"></div>
+              <div class="crt-speaker"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -368,22 +378,15 @@ onUnmounted(() => {
 
 /* --- Design Tokens & Resets --- */
 .kest-studio {
-  /* 薄めたくすみオレンジ（テラコッタ〜アプリコット）のグラデーション */
   --color-grad-start: #FF9B6A; 
   --color-grad-end: #E87A43;
-
-  /* アクセントカラーも全体に馴染むオレンジに */
   --color-accent: #E87A43; 
   --color-accent-hover: #D6652D;
-  
-  /* Organic Earth (ディープオリーブ) の表面色 */
   --color-surface: #2E3526;
   --color-border: #4C5741;
-  
-  /* 文字色 */
-  --color-text-light: #FFFFFF;    /* 背景がオレンジの時の文字色 */
-  --color-text-surface: #EAF0E1;  /* ディープオリーブ背景の上の文字色（淡いグリーン系の白） */
-  --color-text-mut: #8B997B;      /* サブテキスト用（くすんだセージグリーン） */
+  --color-text-light: #FFFFFF;
+  --color-text-surface: #EAF0E1;
+  --color-text-mut: #8B997B;
   
   --font-sans: 'Zen Kaku Gothic New', sans-serif;
   --font-en: 'Cormorant Garamond', serif;
@@ -395,16 +398,16 @@ onUnmounted(() => {
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   position: relative;
-  background-color: var(--color-grad-start); /* フォールバック */
+  background-color: var(--color-grad-start);
 }
 
-/* --- Yuppa-style Yuba Background (オーガニックレイヤー) --- */
+/* --- Yuppa-style Yuba Background --- */
 .yuba-bg {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 0; /* 最背面 */
+  z-index: 0;
   overflow: hidden;
   background: linear-gradient(135deg, var(--color-grad-start) 0%, var(--color-grad-end) 100%);
 }
@@ -415,14 +418,13 @@ onUnmounted(() => {
   transform-origin: center center;
 }
 
-/* 幾重にも重なる生湯葉の層を表現 */
 .shape-1 {
   width: 120vw;
   height: 120vw;
   top: -40%;
   left: -20%;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.02));
-  backdrop-filter: blur(8px); /* 重なり合う部分の透け感を表現 */
+  backdrop-filter: blur(8px);
   animation-delay: 0s;
   animation-duration: 25s;
 }
@@ -448,25 +450,13 @@ onUnmounted(() => {
 }
 
 @keyframes morphYuba {
-  0% {
-    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-    transform: rotate(0deg) scale(1);
-  }
-  34% {
-    border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%;
-    transform: rotate(45deg) scale(1.05);
-  }
-  67% {
-    border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%;
-    transform: rotate(90deg) scale(0.95);
-  }
-  100% {
-    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-    transform: rotate(135deg) scale(1);
-  }
+  0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(0deg) scale(1); }
+  34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; transform: rotate(45deg) scale(1.05); }
+  67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; transform: rotate(90deg) scale(0.95); }
+  100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(135deg) scale(1); }
 }
 
-/* --- Noise Effect (フィルムノイズ) --- */
+/* --- Noise Effect --- */
 .noise-overlay {
   position: fixed;
   top: 0;
@@ -490,7 +480,6 @@ onUnmounted(() => {
   padding: 0 24px;
 }
 
-/* --- コンテンツのZ-Indexを背景の上に固定 --- */
 .hero, .section, .footer {
   position: relative;
   z-index: 1;
@@ -500,7 +489,6 @@ onUnmounted(() => {
   padding: 140px 0;
 }
 
-/* --- Typography --- */
 h1, h2, h3 {
   margin: 0;
   line-height: 1.4;
@@ -540,7 +528,7 @@ h1, h2, h3 {
 }
 
 .header.is-scrolled {
-  background-color: rgba(46, 53, 38, 0.95); /* ディープオリーブに透過 */
+  background-color: rgba(46, 53, 38, 0.95);
   color: var(--color-text-surface);
   box-shadow: 0 4px 24px rgba(20, 26, 15, 0.4);
   padding: 16px 0;
@@ -563,7 +551,7 @@ h1, h2, h3 {
 }
 
 .header.is-scrolled .logo {
-  color: var(--color-accent); /* スクロール時はロゴをオレンジにして際立たせる */
+  color: var(--color-accent);
 }
 
 .nav {
@@ -637,15 +625,15 @@ h1, h2, h3 {
   margin-bottom: 24px;
   letter-spacing: 0.02em;
   text-shadow: 0 4px 24px rgba(232, 122, 67, 0.4);
-  white-space: nowrap; /* ← 追加：絶対に改行させない */
+  white-space: nowrap;
 }
 
-/* --- Scroll Indicator (回転する円形テキスト) --- */
+/* --- Scroll Indicator --- */
 .scroll-indicator {
   position: absolute;
   bottom: 32px;
   left: 50%;
-  margin-left: -60px; /* transformの代わりに、幅の半分(60px)をマイナスしてど真ん中に固定 */
+  margin-left: -60px;
   z-index: 10;
   width: 120px;
   display: flex;
@@ -671,7 +659,7 @@ h1, h2, h3 {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%); /* コンテナの完全な中央に配置 */
+  transform: translate(-50%, -50%);
   width: 1px;
   height: 48px;
   background-color: transparent;
@@ -685,7 +673,7 @@ h1, h2, h3 {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #FFFFFF; /* 中心の落ちる線 */
+  background-color: #FFFFFF;
   animation: scrollDropCenter 2.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
@@ -713,7 +701,7 @@ h1, h2, h3 {
   background: var(--color-surface);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 16px 40px rgba(20, 26, 15, 0.4); /* 暗い背景用の深いシャドウ */
+  box-shadow: 0 16px 40px rgba(20, 26, 15, 0.4);
   transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
@@ -725,7 +713,7 @@ h1, h2, h3 {
 .card-thumb {
   position: relative;
   aspect-ratio: 16 / 9; 
-  background-color: #1E2419; /* より深いオリーブグリーン */
+  background-color: #1E2419;
   overflow: hidden;
 }
 
@@ -743,7 +731,7 @@ h1, h2, h3 {
 .card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(46, 53, 38, 0.4); /* ディープオリーブのオーバーレイ */
+  background: rgba(46, 53, 38, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -875,7 +863,7 @@ h1, h2, h3 {
 
 .btn-outline:hover {
   border-color: var(--color-accent);
-  background-color: #3A4230; /* ホバー時は暗いオリーブグリーンに */
+  background-color: #3A4230;
 }
 
 .btn-insta {
@@ -886,11 +874,11 @@ h1, h2, h3 {
   width: 100%;
 }
 
-/* --- Modals --- */
+/* --- Modals Common --- */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(20, 26, 15, 0.85); /* モーダル背景もオーガニックに暗く */
+  background: rgba(20, 26, 15, 0.85);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -905,20 +893,7 @@ h1, h2, h3 {
   background: var(--color-surface);
   color: var(--color-text-surface);
   border-radius: 24px;
-  overflow: hidden;
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5);
-}
-
-.modal-content--video {
-  max-width: 1000px;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  border-radius: 16px;
-}
-
-.modal-content--contact {
-  max-width: 600px;
-  padding: 64px 48px;
 }
 
 .modal-close-btn {
@@ -945,23 +920,11 @@ h1, h2, h3 {
   transform: rotate(90deg);
 }
 
-.modal-close-btn--video {
-  background: rgba(255, 255, 255, 0.2);
-  color: #FFF;
-}
-
-.modal-close-btn--video:hover {
-  background: rgba(255, 255, 255, 0.4);
-}
-
-.video-wrapper {
-  width: 100%;
-  height: 100%;
-}
-
-.video-wrapper iframe {
-  width: 100%;
-  height: 100%;
+/* --- Contact Modal Specific --- */
+.modal-content--contact {
+  max-width: 600px;
+  padding: 64px 48px;
+  overflow: hidden; /* コンタクトのみはみ出しを隠す */
 }
 
 /* --- Form Styles --- */
@@ -997,7 +960,7 @@ h1, h2, h3 {
 .contact-form textarea {
   width: 100%;
   padding: 16px 20px;
-  background-color: #1E2419; /* 入力欄は背景よりさらに一段暗く */
+  background-color: #1E2419;
   border: 2px solid var(--color-border);
   border-radius: 12px;
   font-family: var(--font-sans);
@@ -1008,7 +971,7 @@ h1, h2, h3 {
 
 .contact-form input::placeholder,
 .contact-form textarea::placeholder {
-  color: #6A7A5A; /* プレースホルダーの文字色調整 */
+  color: #6A7A5A;
 }
 
 .contact-form input:focus,
@@ -1043,7 +1006,7 @@ h1, h2, h3 {
 }
 
 .error {
-  color: #FF5E5E; /* 暗い背景でも目立つ赤に調整 */
+  color: #FF5E5E;
   font-size: 0.85rem;
   font-weight: 700;
   margin-top: 8px;
@@ -1087,60 +1050,193 @@ h1, h2, h3 {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Responsive --- */
+/* =========================================================
+   📺 CRT TV (ブラウン管テレビ風動画モーダル) 
+========================================================= */
+.modal-content--video {
+  max-width: 900px;
+  background: transparent;
+  box-shadow: none;
+  /* 閉じるボタンを外側に出すため、hiddenにしない */
+  overflow: visible !important; 
+}
+
+/* テレビの外枠 */
+.crt-casing {
+  background: linear-gradient(135deg, #4C5741, #2E3526);
+  border-radius: 32px;
+  padding: 32px 24px 32px 32px;
+  display: flex;
+  gap: 24px;
+  box-shadow: 
+    inset 0 4px 12px rgba(255, 255, 255, 0.1),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.6),
+    0 32px 80px rgba(0, 0, 0, 0.8);
+  border: 2px solid #1E2419;
+}
+
+/* 画面の黒いフチ部分 */
+.crt-screen-bezel {
+  flex: 1;
+  background: #0a0a0a;
+  border-radius: 40px; 
+  padding: 16px;
+  box-shadow: 
+    inset 0 8px 16px rgba(0,0,0,0.9),
+    0 2px 4px rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ブラウン管のガラス反射と走査線エフェクト */
+.crt-glass {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none; 
+  background: 
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.6) 100%);
+  background-size: 100% 4px, 100% 100%;
+  border-radius: 24px;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.9);
+  animation: crtScanlines 10s linear infinite;
+}
+
+/* YouTubeを中央に配置 */
+.video-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.video-wrapper iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border-radius: 8px; 
+}
+
+/* 右側の操作パネル */
+.crt-panel {
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding-top: 16px;
+}
+
+/* チャンネルダイヤル */
+.crt-dial {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #3A4230, #1E2419);
+  border-radius: 50%;
+  box-shadow: 
+    0 4px 8px rgba(0,0,0,0.6),
+    inset 0 2px 4px rgba(255,255,255,0.1);
+  position: relative;
+}
+
+.crt-dial::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 12px;
+  background: var(--color-accent); 
+  border-radius: 2px;
+}
+
+/* スピーカーの溝 */
+.crt-speaker {
+  flex: 1;
+  width: 32px;
+  margin-bottom: 16px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #1E2419,
+    #1E2419 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  border-radius: 4px;
+  opacity: 0.8;
+}
+
+@keyframes crtScanlines {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 0 100px, 0 0; }
+}
+
+/* テレビモーダル用の閉じるボタン配置 */
+.modal-close-btn--video {
+  top: -64px;
+  right: 0;
+  background: var(--color-accent);
+  color: #FFF;
+}
+
+.modal-close-btn--video:hover {
+  background: var(--color-accent-hover);
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* --- Responsive (スマホ用) --- */
 @media (max-width: 768px) {
-  .header-inner {
-    padding: 0 24px;
-  }
+  .header-inner { padding: 0 24px; }
+  .nav { gap: 24px; }
+  .nav a:not(.nav-social) { display: none; }
+  .nav-social::before { display: none; }
+  .nav-social span { display: none; }
+  .hero-title { font-size: clamp(2rem, 12vw, 3.5rem); }
+  .hero-subtitle { font-size: 1.4rem; }
+  .section { padding: 80px 0; }
+  .contact-box-inner { padding: 56px 24px; border-radius: 20px; }
+  .contact-title { font-size: 2.2rem; }
+  .contact-actions { flex-direction: column; }
+  .btn { width: 100%; min-width: auto; }
+  .modal-content--contact { padding: 40px 24px; }
   
-  .nav {
-    gap: 24px;
-  }
-  
-  .nav a:not(.nav-social) {
-    display: none;
-  }
-  
-  .nav-social::before {
-    display: none;
-  }
-  
-  .nav-social span {
-    display: none;
-  }
-
- .hero-title {
-    font-size: clamp(2rem, 12vw, 3.5rem);
-  }
-  
-  .hero-subtitle {
-    font-size: 1.4rem;
-  }
-  
-  .section {
-    padding: 80px 0;
-  }
-  
-  .contact-box-inner {
-    padding: 56px 24px;
-    border-radius: 20px;
-  }
-
-  .contact-title {
-    font-size: 2.2rem;
-  }
-
-  .contact-actions {
+  /* スマホ用テレビレイアウト */
+  .crt-casing {
     flex-direction: column;
+    padding: 16px;
+    gap: 16px;
   }
-
-  .btn {
+  .crt-panel {
     width: 100%;
-    min-width: auto;
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 0;
   }
-
-  .modal-content--contact {
-    padding: 40px 24px;
+  .crt-dial {
+    width: 40px;
+    height: 40px;
+  }
+  .crt-speaker {
+    height: 32px;
+    width: 100px;
+    margin-bottom: 0;
+    background: repeating-linear-gradient(
+      to right,
+      #1E2419,
+      #1E2419 4px,
+      transparent 4px,
+      transparent 8px
+    );
   }
 }
 </style>
