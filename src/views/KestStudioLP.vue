@@ -128,15 +128,17 @@ const submitContact = async () => {
 
   try {
     // Netlify Formsの仕様に合わせて送信
+const formData = new URLSearchParams();
+    formData.append('form-name', 'contact'); // ステップ1のフォーム名と一致させる
+    formData.append('name', contact.value.name);
+    formData.append('email', contact.value.email);
+    formData.append('message', contact.value.message);
+
+    // 👇 Netlifyに向けて送信
     const res = await fetch('/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: encode({
-        'form-name': 'contact', // ここで「contact」という名前のフォームに送信すると指定
-        name: contact.value.name,
-        email: contact.value.email,
-        message: contact.value.message,
-      }),
+      body: formData.toString()
     });
 
     if (res.ok) {
@@ -149,7 +151,7 @@ const submitContact = async () => {
       throw new Error('API Error');
     }
   } catch (e) {
-    // エラー時は自動でメールソフトを起動する（予備のフォールバック）
+    // 送信エラー時は、念のためメールアプリを立ち上げる
     const subject = encodeURIComponent('KestStudio Contact: ' + contact.value.name);
     const body = encodeURIComponent(contact.value.message + '\n\nFrom: ' + contact.value.name + ' <' + contact.value.email + '>');
     window.location.href = `mailto:keststudiohkd@gmail.com?subject=${subject}&body=${body}`;
@@ -302,22 +304,22 @@ onUnmounted(() => {
             <h3>お問い合わせ</h3>
             <p class="modal-sub">プロジェクトのご相談やご質問など、お気軽にご連絡ください。</p>
             
-            <form class="contact-form" @submit.prevent="submitContact" novalidate>
+            <form class="contact-form" name="contact" @submit.prevent="submitContact" novalidate>
               <div class="form-group">
                 <label>お名前</label>
-                <input type="text" v-model="contact.name" placeholder="山田 太郎" />
+                <input type="text" name="name" v-model="contact.name" placeholder="山田 太郎" />
                 <span class="error" v-if="contactErrors.name">{{ contactErrors.name }}</span>
               </div>
 
               <div class="form-group">
                 <label>メールアドレス</label>
-                <input type="email" v-model="contact.email" placeholder="hello@example.com" />
+                <input type="email" name="email" v-model="contact.email" placeholder="hello@example.com" />
                 <span class="error" v-if="contactErrors.email">{{ contactErrors.email }}</span>
               </div>
 
               <div class="form-group">
                 <label>お問い合わせ内容</label>
-                <textarea v-model="contact.message" rows="5" placeholder="ご相談内容をご記入ください"></textarea>
+                <textarea name="message" v-model="contact.message" rows="5" placeholder="ご相談内容をご記入ください"></textarea>
                 <span class="error" v-if="contactErrors.message">{{ contactErrors.message }}</span>
               </div>
 
