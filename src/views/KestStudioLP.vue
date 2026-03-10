@@ -621,6 +621,7 @@ h1, h2, h3 {
   margin-bottom: 24px;
   letter-spacing: 0.02em;
   text-shadow: 0 4px 24px rgba(232, 122, 67, 0.4);
+  white-space: nowrap; /* ← 追加：絶対に改行させない */
 }
 
 /* --- Scroll Indicator (回転する円形テキスト) --- */
@@ -1092,8 +1093,8 @@ h1, h2, h3 {
     display: none;
   }
 
-  .hero-title {
-    font-size: 3.5rem;
+ .hero-title {
+    font-size: clamp(2rem, 12vw, 3.5rem);
   }
   
   .hero-subtitle {
