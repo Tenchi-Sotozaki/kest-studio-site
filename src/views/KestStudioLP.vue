@@ -9,9 +9,25 @@ const currentVideoId = ref('');
 const modalTriggerElement = ref(null);
 const isScrolled = ref(false);
 
+// ★ショート動画用のモーダル状態
+const isShortModalOpen = ref(false);
+const currentShortId = ref('');
+
 // --- ★nicopi風 横スクロール用の状態 ---
 const shortVideoSection = ref(null);
 const horizontalTrack = ref(null); 
+
+// ★ YouTubeのIDを指定するように変更しました
+const shortVideos = [
+  { youtubeId: 'ここにYouTubeのID1', title: 'Hick up', category: 'Short Film' },
+  { youtubeId: 'ここにYouTubeのID2', title: 'Hoteiya', category: 'Promotion' },
+  { youtubeId: 'ここにYouTubeのID3', title: 'Kai', category: 'Short Film' },
+  { youtubeId: 'ここにYouTubeのID4', title: 'White Seed', category: 'Commercial' },
+  { youtubeId: 'ここにYouTubeのID5', title: '亀仙人', category: 'Vlog' },
+  { youtubeId: 'ここにYouTubeのID6', title: '朝一', category: 'Cinematic' },
+  { youtubeId: 'ここにYouTubeのID7', title: '魔法', category: 'Short Film' },
+  { youtubeId: 'ここにYouTubeのID8', title: '夢蔵', category: 'Promotion' }
+];
 
 const fontList = [
   "'Cormorant Garamond', serif",
@@ -51,24 +67,17 @@ let fontInterval = null;
 let headerHeightRaf = 0;
 
 const updateHeaderHeightVar = () => {
-  // fixed header の実高さを CSS 変数へ反映（is-scrolledで高さが変わるため追従）
   const headerEl = document.querySelector('.header');
   const h = headerEl?.getBoundingClientRect().height;
   if (!h) return;
   document.documentElement.style.setProperty('--kest-header-h', `${Math.round(h)}px`);
 };
 
-// --- Contact Form State ---
-const contact = ref({ name: '', email: '', message: '', consent: false });
-const contactErrors = ref({});
-const isSubmitting = ref(false);
-const submitSuccess = ref(false);
-
 // --- Methods ---
 const openVideoModal = (videoId, event) => {
   currentVideoId.value = videoId;
   isVideoModalOpen.value = true;
-  modalTriggerElement.value = event?.target || null;
+  modalTriggerElement.value = event?.currentTarget || null;
   nextTick(() => {
     const closeBtn = document.querySelector('.modal-close-btn--video');
     if (closeBtn) closeBtn.focus();
@@ -83,9 +92,28 @@ const closeVideoModal = () => {
   if (modalTriggerElement.value) modalTriggerElement.value.focus();
 };
 
+// ★ショート動画（YouTube）を開く処理
+const openShortModal = (youtubeId, event) => {
+  currentShortId.value = youtubeId;
+  isShortModalOpen.value = true;
+  modalTriggerElement.value = event?.currentTarget || null;
+  nextTick(() => {
+    const closeBtn = document.querySelector('.modal-close-btn--short');
+    if (closeBtn) closeBtn.focus();
+  });
+  document.body.style.overflow = 'hidden';
+};
+
+const closeShortModal = () => {
+  isShortModalOpen.value = false;
+  currentShortId.value = '';
+  document.body.style.overflow = '';
+  if (modalTriggerElement.value) modalTriggerElement.value.focus();
+};
+
 const openContactModal = (event) => {
   isContactModalOpen.value = true;
-  modalTriggerElement.value = event?.target || null;
+  modalTriggerElement.value = event?.currentTarget || null;
   nextTick(() => {
     const closeBtn = document.querySelector('.modal-close-btn--contact');
     if (closeBtn) closeBtn.focus();
@@ -102,11 +130,12 @@ const closeContactModal = () => {
 const handleKeydown = (e) => {
   if (e.key === 'Escape') {
     if (isVideoModalOpen.value) closeVideoModal();
+    else if (isShortModalOpen.value) closeShortModal();
     else if (isContactModalOpen.value) closeContactModal();
   }
 };
 
-// --- ★重なるバグを完全に無くした、シンプルなスライド計算 ---
+// --- スライド計算 ---
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50;
   if (headerHeightRaf) cancelAnimationFrame(headerHeightRaf);
@@ -119,7 +148,6 @@ const handleScroll = () => {
     const sectionTop = rect.top;
     const scrollDistance = rect.height - window.innerHeight;
 
-    // スクロール進行度（0.0 〜 1.0）
     let progress = 0;
     if (sectionTop <= 0 && sectionTop >= -scrollDistance) {
       progress = Math.abs(sectionTop) / scrollDistance;
@@ -129,17 +157,11 @@ const handleScroll = () => {
       progress = 1;
     }
 
-    // トラック全体の幅を取得（CSSのmax-contentで自動計算された幅）
     const trackWidth = horizontalTrack.value.scrollWidth;
     const windowWidth = window.innerWidth;
-    
-    // 最大でどれくらい左にスライドできるか（全体の幅 - 画面の幅）
     const maxTranslate = trackWidth - windowWidth;
-
-    // 進行度に合わせてスライドさせる
     const translateX = progress * maxTranslate;
 
-    // translate3dを使って滑らかに横移動（ハードウェアアクセラレーション有効化）
     horizontalTrack.value.style.transform = `translate3d(-${translateX}px, 0, 0)`;
   }
 };
@@ -201,13 +223,10 @@ const submitContact = async () => {
 // --- Lifecycle ---
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
-  // 画面の幅が変わった時にも計算し直すように追加
   window.addEventListener('scroll', handleScroll, { passive: true });
   window.addEventListener('resize', handleScroll);
   
-  // 初期ロード時にも少し待ってから計算させる（要素の幅を正確に取得するため）
   setTimeout(handleScroll, 50); 
-  // 初期のヘッダー高さも反映
   setTimeout(updateHeaderHeightVar, 0);
 
   let lastIndex = 0;
@@ -292,22 +311,36 @@ onUnmounted(() => {
             <div class="shorts-track" ref="horizontalTrack">
               
               <article 
-                v-for="i in 7" 
-                :key="i" 
+                v-for="(video, index) in shortVideos" 
+                :key="index" 
                 class="short-card-wrapper"
               >
                 <div class="short-card-inner">
-                  <div class="short-thumb">
-                    <div class="short-dummy-bg"></div>
+                  <div 
+                    class="short-thumb"
+                    @click="(e) => openShortModal(video.youtubeId, e)"
+                    tabindex="0"
+                    @keydown.enter="(e) => openShortModal(video.youtubeId, e)"
+                    :aria-label="`${video.title}を全画面で再生する`"
+                  >
+                    <img 
+                      v-if="video.youtubeId && video.youtubeId !== 'ここにYouTubeのID1'"
+                      :src="`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`" 
+                      class="real-video"
+                      alt="thumbnail"
+                    />
+                    <div v-else class="short-dummy-bg"></div>
+                    
                     <div class="card-overlay">
                       <div class="play-button">
                         <svg viewBox="0 0 24 24" fill="currentColor" class="play-icon"><path d="M8 5v14l11-7z"/></svg>
                       </div>
                     </div>
                   </div>
+                  
                   <div class="short-info">
-                    <h3>Short Video {{ i }}</h3>
-                    <span class="category">Coming Soon</span>
+                    <h3>{{ video.title }}</h3>
+                    <span class="category">{{ video.category }}</span>
                   </div>
                 </div>
               </article>
@@ -435,7 +468,7 @@ onUnmounted(() => {
     <Transition name="fade-modal">
       <div v-if="isVideoModalOpen" class="modal-backdrop" @click.self="closeVideoModal" role="dialog" aria-modal="true">
         <div class="modal-content modal-content--modern-video">
-          <button class="modal-close-btn" @click="closeVideoModal" aria-label="閉じる">✕</button>
+          <button class="modal-close-btn modal-close-btn--video" @click="closeVideoModal" aria-label="閉じる">✕</button>
           <div class="video-wrapper">
             <iframe v-if="currentVideoId" 
               :src="`https://www.youtube-nocookie.com/embed/${currentVideoId}?autoplay=1&rel=0`"
@@ -447,6 +480,24 @@ onUnmounted(() => {
         </div>
       </div>
     </Transition>
+
+    <Transition name="fade-modal">
+      <div v-if="isShortModalOpen" class="modal-backdrop" @click.self="closeShortModal" role="dialog" aria-modal="true">
+        <div class="modal-content modal-content--short-video">
+          <button class="modal-close-btn modal-close-btn--short" @click="closeShortModal" aria-label="閉じる">✕</button>
+          <div class="short-video-wrapper">
+            <iframe v-if="currentShortId" 
+              :src="`https://www.youtube-nocookie.com/embed/${currentShortId}?autoplay=1&rel=0`"
+              title="YouTube Short video player" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              style="width: 100%; height: 100%;">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
   </div>
 </template>
 
@@ -565,20 +616,17 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
    🎞️ nicopiスタイル 横スクロールセクション
 ========================================================= */
 .shorts-section {
-  height: 400vh; /* スクロールできる余白を確保 */
-  background-color: transparent; /* 背景色を透明に */
+  height: 400vh; 
+  background-color: transparent; 
 }
 
 .shorts-sticky {
   position: sticky;
   top: 0;
-  /* viewport 内に収めて見切れを防ぐ */
   height: 100vh;
   min-height: 100vh;
   width: 100vw;
-  /* Shorts見出しのための確保スペース（被り防止） */
   --shorts-header-space: 84px;
-  /* 横は隠す（横スクロール演出のため） */
   overflow-x: hidden;
   overflow-y: hidden;
   display: flex;
@@ -587,17 +635,16 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   justify-content: center;
   padding-top: 0;
   padding-bottom: 0;
-  box-sizing: border-box; /* paddingを高さに含める */
+  box-sizing: border-box; 
 }
 
 .shorts-sticky {
-  /* “止まる位置” 微調整：Coming Soon を見切れさせない */
   --shorts-stage-shift-y: -48px;
 }
 
 .shorts-header {
   position: absolute;
-  top: calc(var(--kest-header-h, 80px) + 18px); /* fixed header を除いた位置 */
+  top: calc(var(--kest-header-h, 80px) + 18px); 
   left: 0;
   right: 0;
   width: min(1100px, calc(100% - 48px));
@@ -613,7 +660,6 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .shorts-stage {
   width: 100%;
   display: flex;
-  /* header を除いた可視領域の中央に “列の中心” を合わせる */
   height: calc(100vh - var(--kest-header-h, 80px) - var(--shorts-header-space));
   padding-top: calc(var(--kest-header-h, 80px) + var(--shorts-header-space));
   align-items: center;
@@ -629,22 +675,20 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 
 .shorts-track {
   display: flex;
-  gap: 128px; /* ★間隔を確実に4倍に維持 */
-  padding: 0 15vw; /* 最初と最後のカードに余白を持たせる */
-  width: max-content; /* 中身に合わせて幅が広がる */
+  gap: 128px; 
+  padding: 0 15vw; 
+  width: max-content; 
   will-change: transform;
 }
 
-/* 各カードの設定 */
 .short-card-wrapper {
-  width: 260px; /* 動画を少し小さく */
-  flex-shrink: 0; /* フレックスボックス内で縮むのを防ぐ */
+  width: 260px; 
+  flex-shrink: 0; 
   cursor: pointer;
   position: relative;
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* nicopi風に、ホバーすると少しフワッと浮くエフェクトを追加 */
 .short-card-wrapper:hover {
   transform: translateY(-10px);
 }
@@ -673,6 +717,15 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 }
 .short-info h3 { font-family: var(--font-en); font-size: 1.25rem; font-weight: 600; color: var(--color-ink); margin-bottom: 6px; letter-spacing: -0.01em; }
 .short-info .category { font-family: var(--font-sans); font-size: 0.78rem; color: var(--color-ink-muted); letter-spacing: 0.18em; text-transform: uppercase; }
+
+/* ★ <img>用のスタイル */
+.real-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
+}
 
 /* =========================================================
    Portfolio Grid (通常の横長映像)
@@ -716,11 +769,29 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .modal-close-btn:hover { background: var(--color-accent); transform: rotate(90deg); }
 
 .modal-content--contact { max-width: 600px; padding: 64px 48px; overflow: hidden; }
+
+/* 長編動画（16:9）用モーダル */
 .modal-content--modern-video { max-width: 1100px; background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8); }
 .modal-content--modern-video .modal-close-btn { top: 16px; right: 16px; background: rgba(0, 0, 0, 0.5); }
 .modal-content--modern-video .modal-close-btn:hover { background: var(--color-accent); }
 .video-wrapper { width: 100%; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; background: #000; }
 .video-wrapper iframe { width: 100%; height: 100%; }
+
+/* ★ ショート動画（9:16）専用モーダル */
+.modal-content--short-video { 
+  background: #000; 
+  border-radius: 16px; 
+  overflow: hidden; 
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+  height: 90vh;
+  max-height: 900px;
+  aspect-ratio: 9 / 16;
+  margin: 0 auto; 
+}
+.modal-content--short-video .modal-close-btn { top: 16px; right: 16px; background: rgba(0, 0, 0, 0.5); }
+.modal-content--short-video .modal-close-btn:hover { background: var(--color-accent); }
+.short-video-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
+
 
 /* --- Form Styles --- */
 .modal-body h3 { font-family: var(--font-en); font-size: 2.2rem; font-weight: 600; color: #0c0c0c; text-align: center; margin-bottom: 16px; letter-spacing: -0.02em; }
@@ -754,10 +825,16 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   .btn { width: 100%; min-width: auto; }
   .modal-content--contact { padding: 40px 24px; }
   
-  /* スマホでの微調整 */
-  .shorts-track { padding: 0 10vw; gap: 64px; } /* ★スマホ版も間隔を確実に維持 */
+  .shorts-track { padding: 0 10vw; gap: 64px; } 
   .short-card-wrapper { width: 200px; } 
   .shorts-sticky { --shorts-header-space: 72px; }
   .shorts-sticky { --shorts-stage-shift-y: -32px; }
+
+  /* スマホでのショート動画モーダル */
+  .modal-content--short-video {
+    width: 90vw;
+    height: auto;
+    max-height: 85vh;
+  }
 }
 </style>
