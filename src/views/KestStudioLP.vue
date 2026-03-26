@@ -9,6 +9,12 @@ const currentVideoId = ref('');
 const modalTriggerElement = ref(null);
 const isScrolled = ref(false);
 
+// ★ Contact Form State
+const contact = ref({ name: '', email: '', message: '', consent: false });
+const contactErrors = ref({});
+const isSubmitting = ref(false);
+const submitSuccess = ref(false);
+
 // ★ショート動画用のモーダル状態
 const isShortModalOpen = ref(false);
 const currentShortId = ref('');
@@ -136,34 +142,43 @@ const handleKeydown = (e) => {
 };
 
 // --- スライド計算 ---
+let scrollTimeout = null;
 const handleScroll = () => {
-  isScrolled.value = window.scrollY > 50;
-  if (headerHeightRaf) cancelAnimationFrame(headerHeightRaf);
-  headerHeightRaf = requestAnimationFrame(() => {
-    updateHeaderHeightVar();
-  });
+  // Throttle scroll events to prevent performance issues
+  if (scrollTimeout) return;
+  
+  scrollTimeout = setTimeout(() => {
+    scrollTimeout = null;
+    
+    isScrolled.value = window.scrollY > 50;
+    if (headerHeightRaf) cancelAnimationFrame(headerHeightRaf);
+    headerHeightRaf = requestAnimationFrame(() => {
+      updateHeaderHeightVar();
+    });
 
-  if (shortVideoSection.value && horizontalTrack.value) {
-    const rect = shortVideoSection.value.getBoundingClientRect();
-    const sectionTop = rect.top;
-    const scrollDistance = rect.height - window.innerHeight;
+    if (shortVideoSection.value && horizontalTrack.value) {
+      const rect = shortVideoSection.value.getBoundingClientRect();
+      const sectionTop = rect.top;
+      const scrollDistance = rect.height - window.innerHeight;
 
-    let progress = 0;
-    if (sectionTop <= 0 && sectionTop >= -scrollDistance) {
-      progress = Math.abs(sectionTop) / scrollDistance;
-    } else if (sectionTop > 0) {
-      progress = 0;
-    } else {
-      progress = 1;
+      let progress = 0;
+      if (sectionTop <= 0 && sectionTop >= -scrollDistance) {
+        progress = Math.abs(sectionTop) / scrollDistance;
+      } else if (sectionTop > 0) {
+        progress = 0;
+      } else {
+        progress = 1;
+      }
+
+      const trackWidth = horizontalTrack.value.scrollWidth;
+      const windowWidth = window.innerWidth;
+      const maxTranslate = trackWidth - windowWidth;
+      const translateX = progress * maxTranslate;
+
+      // Use transform3d for better performance
+      horizontalTrack.value.style.transform = `translate3d(-${translateX}px, 0, 0)`;
     }
-
-    const trackWidth = horizontalTrack.value.scrollWidth;
-    const windowWidth = window.innerWidth;
-    const maxTranslate = trackWidth - windowWidth;
-    const translateX = progress * maxTranslate;
-
-    horizontalTrack.value.style.transform = `translate3d(-${translateX}px, 0, 0)`;
-  }
+  }, 16); // ~60fps throttling
 };
 
 // --- Contact Form Helpers ---
@@ -238,7 +253,7 @@ onMounted(() => {
     
     lastIndex = randomIndex;
     currentHeroFont.value = fontList[randomIndex];
-  }, 100);
+  }, 2000); // Changed from 100ms to 2000ms (2 seconds) to reduce flickering
 });
 
 onUnmounted(() => {
@@ -248,6 +263,7 @@ onUnmounted(() => {
 
   if (headerHeightRaf) cancelAnimationFrame(headerHeightRaf);
   if (fontInterval) clearInterval(fontInterval);
+  if (scrollTimeout) clearTimeout(scrollTimeout);
 });
 </script>
 
@@ -586,7 +602,20 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 /* --- Hero --- */
 .hero { height: 100vh; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .hero-content { position: relative; z-index: 2; padding: 0 24px; }
-.hero-title { font-family: var(--font-en); font-size: clamp(3.6rem, 9.2vw, 7.2rem); font-weight: 600; margin-bottom: 24px; letter-spacing: -0.03em; color: var(--color-ink); text-shadow: none; white-space: nowrap; }
+.hero-title { 
+  font-family: var(--font-en); 
+  font-size: clamp(3.6rem, 9.2vw, 7.2rem); 
+  font-weight: 600; 
+  margin-bottom: 24px; 
+  letter-spacing: -0.03em; 
+  color: var(--color-ink); 
+  text-shadow: none; 
+  white-space: nowrap;
+  /* Performance optimizations */
+  will-change: font-family;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
 .hero-copy {
   margin: 0 auto;
   max-width: 34rem;
