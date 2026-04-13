@@ -9,12 +9,6 @@ const currentVideoId = ref('');
 const modalTriggerElement = ref(null);
 const isScrolled = ref(false);
 
-// ★ Contact Form State
-const contact = ref({ name: '', email: '', message: '', consent: false });
-const contactErrors = ref({});
-const isSubmitting = ref(false);
-const submitSuccess = ref(false);
-
 // ★ショート動画用のモーダル状態
 const isShortModalOpen = ref(false);
 const currentShortId = ref('');
@@ -23,16 +17,15 @@ const currentShortId = ref('');
 const shortVideoSection = ref(null);
 const horizontalTrack = ref(null); 
 
-// ★ YouTubeのIDを指定するように変更しました
+// ★ 動画のタイトルとカテゴリーを更新しました
 const shortVideos = [
-  { youtubeId: 'ここにYouTubeのID1', title: 'Hick up', category: 'Short Film' },
-  { youtubeId: 'ここにYouTubeのID2', title: 'Hoteiya', category: 'Promotion' },
-  { youtubeId: 'ここにYouTubeのID3', title: 'Kai', category: 'Short Film' },
-  { youtubeId: 'ここにYouTubeのID4', title: 'White Seed', category: 'Commercial' },
-  { youtubeId: 'ここにYouTubeのID5', title: '亀仙人', category: 'Vlog' },
-  { youtubeId: 'ここにYouTubeのID6', title: '朝一', category: 'Cinematic' },
-  { youtubeId: 'ここにYouTubeのID7', title: '魔法', category: 'Short Film' },
-  { youtubeId: 'ここにYouTubeのID8', title: '夢蔵', category: 'Promotion' }
+  { youtubeId: 'XihcgtAgbD4', title: 'HOTEIYA', category: 'Sandwich Stand' },
+  { youtubeId: '5SvSdn6lqN0', title: 'Gen Sekikawa', category: 'Running' },
+  { youtubeId: 'nNoFhJRY0HQ', title: 'White Seed', category: 'Craft Beer' },
+  { youtubeId: 'C4zgfmj39yU', title: 'Kai Yuki', category: 'Haircut Short Film' },
+  { youtubeId: 'ILTHCawTXQA', title: 'Hatate Takeru Skateboarding', category: 'Short Film' },
+  { youtubeId: 'SLo4-y1plug', title: '亀仙人', category: 'Vlog' },
+  { youtubeId: 'gX_AfG1kw3Y', title: '函館市水産物卸売市場', category: 'Cinematic' }
 ];
 
 const fontList = [
@@ -98,7 +91,6 @@ const closeVideoModal = () => {
   if (modalTriggerElement.value) modalTriggerElement.value.focus();
 };
 
-// ★ショート動画（YouTube）を開く処理
 const openShortModal = (youtubeId, event) => {
   currentShortId.value = youtubeId;
   isShortModalOpen.value = true;
@@ -142,43 +134,34 @@ const handleKeydown = (e) => {
 };
 
 // --- スライド計算 ---
-let scrollTimeout = null;
 const handleScroll = () => {
-  // Throttle scroll events to prevent performance issues
-  if (scrollTimeout) return;
-  
-  scrollTimeout = setTimeout(() => {
-    scrollTimeout = null;
-    
-    isScrolled.value = window.scrollY > 50;
-    if (headerHeightRaf) cancelAnimationFrame(headerHeightRaf);
-    headerHeightRaf = requestAnimationFrame(() => {
-      updateHeaderHeightVar();
-    });
+  isScrolled.value = window.scrollY > 50;
+  if (headerHeightRaf) cancelAnimationFrame(headerHeightRaf);
+  headerHeightRaf = requestAnimationFrame(() => {
+    updateHeaderHeightVar();
+  });
 
-    if (shortVideoSection.value && horizontalTrack.value) {
-      const rect = shortVideoSection.value.getBoundingClientRect();
-      const sectionTop = rect.top;
-      const scrollDistance = rect.height - window.innerHeight;
+  if (shortVideoSection.value && horizontalTrack.value) {
+    const rect = shortVideoSection.value.getBoundingClientRect();
+    const sectionTop = rect.top;
+    const scrollDistance = rect.height - window.innerHeight;
 
-      let progress = 0;
-      if (sectionTop <= 0 && sectionTop >= -scrollDistance) {
-        progress = Math.abs(sectionTop) / scrollDistance;
-      } else if (sectionTop > 0) {
-        progress = 0;
-      } else {
-        progress = 1;
-      }
-
-      const trackWidth = horizontalTrack.value.scrollWidth;
-      const windowWidth = window.innerWidth;
-      const maxTranslate = trackWidth - windowWidth;
-      const translateX = progress * maxTranslate;
-
-      // Use transform3d for better performance
-      horizontalTrack.value.style.transform = `translate3d(-${translateX}px, 0, 0)`;
+    let progress = 0;
+    if (sectionTop <= 0 && sectionTop >= -scrollDistance) {
+      progress = Math.abs(sectionTop) / scrollDistance;
+    } else if (sectionTop > 0) {
+      progress = 0;
+    } else {
+      progress = 1;
     }
-  }, 16); // ~60fps throttling
+
+    const trackWidth = horizontalTrack.value.scrollWidth;
+    const windowWidth = window.innerWidth;
+    const maxTranslate = trackWidth - windowWidth;
+    const translateX = progress * maxTranslate;
+
+    horizontalTrack.value.style.transform = `translate3d(-${translateX}px, 0, 0)`;
+  }
 };
 
 // --- Contact Form Helpers ---
@@ -253,7 +236,7 @@ onMounted(() => {
     
     lastIndex = randomIndex;
     currentHeroFont.value = fontList[randomIndex];
-  }, 2000); // Changed from 100ms to 2000ms (2 seconds) to reduce flickering
+  }, 100);
 });
 
 onUnmounted(() => {
@@ -263,7 +246,6 @@ onUnmounted(() => {
 
   if (headerHeightRaf) cancelAnimationFrame(headerHeightRaf);
   if (fontInterval) clearInterval(fontInterval);
-  if (scrollTimeout) clearTimeout(scrollTimeout);
 });
 </script>
 
@@ -284,8 +266,21 @@ onUnmounted(() => {
           <a href="#shorts">Shorts</a>
           <a href="#portfolio">Works</a>
           <a href="#contact">Contact</a>
+          
+          <a href="https://www.youtube.com/channel/UCH-4ben4UmUS8ZpEylbhRFQ" target="_blank" rel="noopener noreferrer" class="nav-social">
+            <svg class="icon-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path>
+              <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+            </svg>
+            <span>YouTube</span>
+          </a>
+
           <a href="https://www.instagram.com/kest_films/" target="_blank" rel="noopener noreferrer" class="nav-social">
-            <svg class="icon-insta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            <svg class="icon-insta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
             <span>Instagram</span>
           </a>
         </nav>
@@ -340,7 +335,7 @@ onUnmounted(() => {
                     :aria-label="`${video.title}を全画面で再生する`"
                   >
                     <img 
-                      v-if="video.youtubeId && video.youtubeId !== 'ここにYouTubeのID1'"
+                      v-if="video.youtubeId"
                       :src="`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`" 
                       class="real-video"
                       alt="thumbnail"
@@ -412,8 +407,16 @@ onUnmounted(() => {
               <button @click="openContactModal" class="btn btn-primary">
                 Webからのお問い合わせ
               </button>
+
+              <a href="https://www.youtube.com/channel/UCH-4ben4UmUS8ZpEylbhRFQ" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-social">
+                <svg class="icon-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path>
+                  <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+                </svg>
+                YouTube
+              </a>
               
-              <a href="https://www.instagram.com/kest_films/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-insta">
+              <a href="https://www.instagram.com/kest_films/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-social">
                 <svg class="icon-insta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                 Instagram (@kest_films)
               </a>
@@ -520,7 +523,6 @@ onUnmounted(() => {
 <style scoped>
 /* --- Design Tokens & Resets --- */
 .kest-studio {
-  /* Foudre-like: warm paper + ink + restrained accent */
   --color-paper: #f7f4ef;
   --color-ink: #0c0c0c;
   --color-ink-muted: rgba(12, 12, 12, 0.62);
@@ -596,26 +598,13 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .nav a:hover { opacity: 0.55; }
 .nav-social { display: flex; align-items: center; gap: 8px; position: relative; }
 .nav-social::before { content: ''; position: absolute; left: -20px; top: 50%; transform: translateY(-50%); width: 1px; height: 16px; background-color: currentColor; opacity: 0.4; }
-.icon-insta { width: 1.2em; height: 1.2em; transition: transform 0.3s ease; }
-.nav-social:hover .icon-insta { transform: scale(1.1); }
+.icon-insta, .icon-youtube { width: 1.2em; height: 1.2em; transition: transform 0.3s ease; }
+.nav-social:hover .icon-insta, .nav-social:hover .icon-youtube { transform: scale(1.1); }
 
 /* --- Hero --- */
 .hero { height: 100vh; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .hero-content { position: relative; z-index: 2; padding: 0 24px; }
-.hero-title { 
-  font-family: var(--font-en); 
-  font-size: clamp(3.6rem, 9.2vw, 7.2rem); 
-  font-weight: 600; 
-  margin-bottom: 24px; 
-  letter-spacing: -0.03em; 
-  color: var(--color-ink); 
-  text-shadow: none; 
-  white-space: nowrap;
-  /* Performance optimizations */
-  will-change: font-family;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-}
+.hero-title { font-family: var(--font-en); font-size: clamp(3.6rem, 9.2vw, 7.2rem); font-weight: 600; margin-bottom: 24px; letter-spacing: -0.03em; color: var(--color-ink); text-shadow: none; white-space: nowrap; }
 .hero-copy {
   margin: 0 auto;
   max-width: 34rem;
@@ -645,8 +634,8 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
    🎞️ nicopiスタイル 横スクロールセクション
 ========================================================= */
 .shorts-section {
-  height: 400vh; 
-  background-color: transparent; 
+  height: 400vh;
+  background-color: transparent;
 }
 
 .shorts-sticky {
@@ -747,7 +736,6 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .short-info h3 { font-family: var(--font-en); font-size: 1.25rem; font-weight: 600; color: var(--color-ink); margin-bottom: 6px; letter-spacing: -0.01em; }
 .short-info .category { font-family: var(--font-sans); font-size: 0.78rem; color: var(--color-ink-muted); letter-spacing: 0.18em; text-transform: uppercase; }
 
-/* ★ <img>用のスタイル */
 .real-video {
   width: 100%;
   height: 100%;
@@ -788,7 +776,7 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .btn-primary:hover { background-color: rgba(12, 12, 12, 0.86); transform: translateY(-2px); box-shadow: 0 26px 90px rgba(0, 0, 0, 0.22); }
 .btn-outline { background-color: transparent; color: #0c0c0c; border: 1px solid rgba(12, 12, 12, 0.22); }
 .btn-outline:hover { border-color: rgba(12, 12, 12, 0.45); background-color: rgba(255, 255, 255, 0.35); }
-.btn-insta { gap: 8px; }
+.btn-social { gap: 8px; }
 .btn-block { width: 100%; }
 
 /* --- Modals Common --- */
@@ -820,7 +808,6 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .modal-content--short-video .modal-close-btn { top: 16px; right: 16px; background: rgba(0, 0, 0, 0.5); }
 .modal-content--short-video .modal-close-btn:hover { background: var(--color-accent); }
 .short-video-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000; }
-
 
 /* --- Form Styles --- */
 .modal-body h3 { font-family: var(--font-en); font-size: 2.2rem; font-weight: 600; color: #0c0c0c; text-align: center; margin-bottom: 16px; letter-spacing: -0.02em; }
@@ -859,7 +846,6 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   .shorts-sticky { --shorts-header-space: 72px; }
   .shorts-sticky { --shorts-stage-shift-y: -32px; }
 
-  /* スマホでのショート動画モーダル */
   .modal-content--short-video {
     width: 90vw;
     height: auto;
