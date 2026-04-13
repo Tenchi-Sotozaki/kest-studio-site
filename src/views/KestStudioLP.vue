@@ -17,7 +17,6 @@ const currentShortId = ref('');
 const shortVideoSection = ref(null);
 const horizontalTrack = ref(null); 
 
-// ★ 動画のタイトルとカテゴリーを更新しました
 const shortVideos = [
   { youtubeId: 'XihcgtAgbD4', title: 'HOTEIYA', category: 'Sandwich Stand' },
   { youtubeId: '5SvSdn6lqN0', title: 'Gen Sekikawa', category: 'Running' },
@@ -293,8 +292,8 @@ onUnmounted(() => {
         Kest Studio
         </h1>
         <p class="hero-copy fade-in delay-3">
-          Se faire entendre, <em>sans faire de bruit</em>.<br />
-          Se faire remarquer, <em>sans se faire voir</em>.
+          Journey to Inspiration,<br />
+          <em>Driven by Our Films.</em>
         </p>
       </div>
       <div class="scroll-indicator fade-in delay-3">
