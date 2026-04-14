@@ -5,7 +5,7 @@ import portfolioData from '../components/portfolio.json';
 // --- State Management ---
 const isContactModalOpen = ref(false);
 const isVideoModalOpen = ref(false);
-const currentVideoId = ref('');
+const currentVideo = ref(null);
 const modalTriggerElement = ref(null);
 const isScrolled = ref(false);
 
@@ -72,8 +72,8 @@ const updateHeaderHeightVar = () => {
 };
 
 // --- Methods ---
-const openVideoModal = (videoId, event) => {
-  currentVideoId.value = videoId;
+const openVideoModal = (item, event) => {
+  currentVideo.value = item;
   isVideoModalOpen.value = true;
   modalTriggerElement.value = event?.currentTarget || null;
   nextTick(() => {
@@ -85,7 +85,7 @@ const openVideoModal = (videoId, event) => {
 
 const closeVideoModal = () => {
   isVideoModalOpen.value = false;
-  currentVideoId.value = '';
+  currentVideo.value = null;
   document.body.style.overflow = '';
   if (modalTriggerElement.value) modalTriggerElement.value.focus();
 };
@@ -362,7 +362,7 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <section id="portfolio" class="portfolio section">
+    <!-- <section id="portfolio" class="portfolio section">
       <div class="container">
         <div class="section-header fade-in-scroll">
           <span class="sub-title">Long Works</span>
@@ -373,9 +373,9 @@ onUnmounted(() => {
           <article v-for="item in portfolioData" :key="item.id" class="card">
             <div 
               class="card-thumb" 
-              @click="(e) => openVideoModal(item.youtubeId, e)" 
+              @click="(e) => openVideoModal(item, e)" 
               tabindex="0"
-              @keydown.enter="(e) => openVideoModal(item.youtubeId, e)"
+              @keydown.enter="(e) => openVideoModal(item, e)"
               :aria-label="`${item.title}の動画を再生する`"
             >
               <img :src="item.thumbnail" :alt="item.alt" loading="lazy" width="800" height="450" />
@@ -392,7 +392,7 @@ onUnmounted(() => {
           </article>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <section id="contact" class="contact section">
       <div class="container">
@@ -488,12 +488,26 @@ onUnmounted(() => {
         <div class="modal-content modal-content--modern-video">
           <button class="modal-close-btn modal-close-btn--video" @click="closeVideoModal" aria-label="閉じる">✕</button>
           <div class="video-wrapper">
-            <iframe v-if="currentVideoId" 
-              :src="`https://www.youtube-nocookie.com/embed/${currentVideoId}?autoplay=1&rel=0`"
+            <iframe v-if="currentVideo" 
+              :src="`https://www.youtube-nocookie.com/embed/${currentVideo.youtubeId}?autoplay=1&rel=0`"
               title="YouTube video player" frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen>
             </iframe>
+          </div>
+          <div v-if="currentVideo" class="video-credits">
+            <div class="video-credits-meta">
+              <span class="video-credits-category">{{ currentVideo.category }}</span>
+              <h3 class="video-credits-title">{{ currentVideo.title }}</h3>
+            </div>
+            <dl v-if="currentVideo.credits" class="credits-list">
+              <template v-for="(name, role) in currentVideo.credits" :key="role">
+                <div v-if="name" class="credits-row">
+                  <dt class="credits-role">{{ role }}</dt>
+                  <dd class="credits-name">{{ name }}</dd>
+                </div>
+              </template>
+            </dl>
           </div>
         </div>
       </div>
@@ -787,11 +801,90 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .modal-content--contact { max-width: 600px; padding: 64px 48px; overflow: hidden; }
 
 /* 長編動画（16:9）用モーダル */
-.modal-content--modern-video { max-width: 1100px; background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8); }
+.modal-content--modern-video { max-width: 1100px; background: #0c0c0c; border-radius: 16px; overflow: hidden; box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8); }
 .modal-content--modern-video .modal-close-btn { top: 16px; right: 16px; background: rgba(0, 0, 0, 0.5); }
-.modal-content--modern-video .modal-close-btn:hover { background: var(--color-accent); }
+.modal-content--modern-video .modal-close-btn:hover { background: rgba(255, 255, 255, 0.2); }
 .video-wrapper { width: 100%; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; background: #000; }
 .video-wrapper iframe { width: 100%; height: 100%; }
+
+/* --- Video Credits Area --- */
+.video-credits {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 40px;
+  padding: 32px 40px;
+  background: #0c0c0c;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.video-credits-meta {
+  flex-shrink: 0;
+}
+
+.video-credits-category {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(247, 244, 239, 0.45);
+  margin-bottom: 8px;
+}
+
+.video-credits-title {
+  font-family: var(--font-en);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #f7f4ef;
+  line-height: 1.2;
+}
+
+.credits-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 48px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.credits-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.credits-role {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(247, 244, 239, 0.4);
+}
+
+.credits-name {
+  font-family: var(--font-en);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: rgba(247, 244, 239, 0.85);
+  margin: 0;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .video-credits {
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px 20px;
+  }
+  .credits-list { gap: 16px 32px; }
+  .video-credits-title { font-size: 1.25rem; }
+}
 
 /* ★ ショート動画（9:16）専用モーダル */
 .modal-content--short-video { 

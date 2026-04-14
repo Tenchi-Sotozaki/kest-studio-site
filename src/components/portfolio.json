@@ -5,7 +5,13 @@
     "category": "Movie",
     "thumbnail": "assets/doshin_thumbnail.jpeg",
     "alt": "童心",
-    "youtubeId": "jmck7bG3QCQ"
+    "youtubeId": "jmck7bG3QCQ",
+    "credits": {
+      "Director": "Tenchi Sotozaki",
+      "Editor": "Tenchi Sotozaki",
+      "Sound Design": "Tenchi Sotozaki",
+      "Camera Assistant": "Einosuke"
+    }
   },
   {
     "id": "2",
@@ -13,7 +19,13 @@
     "category": "Movie",
     "thumbnail": "assets/kaiko_thumbnail.jpeg",
     "alt": "懐古",
-    "youtubeId": "qHzATTcr9UM"
+    "youtubeId": "qHzATTcr9UM",
+    "credits": {
+      "Director": "Tenchi Sotozaki",
+      "Editor": "Tenchi Sotozaki",
+      "Sound Design": "Tenchi Sotozaki",
+      "Camera Assistant": "Einosuke"
+    }
   },
   {
     "id": "3",
@@ -21,7 +33,12 @@
     "category": "human filme",
     "thumbnail": "assets/trip_thumbnail.jpeg",
     "alt": "Human revo 旅予告動画",
-    "youtubeId": "chEaIIt1F9U"
+    "youtubeId": "chEaIIt1F9U",
+    "credits": {
+      "Director": "Tenchi Sotozaki",
+      "Editor": "Tenchi Sotozaki",
+      "Camera Assistant": "Einosuke"
+    }
   },
   {
     "id": "4",
@@ -29,6 +46,11 @@
     "category": "PR",
     "thumbnail": "assets/oimo_thumbnail.jpeg",
     "alt": "浅草おいも屋",
-    "youtubeId": "0oi3orSeFVQ"
+    "youtubeId": "0oi3orSeFVQ",
+    "credits": {
+      "Director": "Tenchi Sotozaki",
+      "Editor": "Tenchi Sotozaki",
+      "Sound Design": "Tenchi Sotozaki"
+    }
   }
 ]
