@@ -17,7 +17,9 @@ const currentShortId = ref('');
 const shortVideoSection = ref(null);
 const horizontalTrack = ref(null); 
 
+// ★ 追加いただいた「Hick up」をリストに反映しました！
 const shortVideos = [
+  { youtubeId: 'qhktiYq6Ifo', title: 'Hick up', category: 'coffee stand' },
   { youtubeId: 'XihcgtAgbD4', title: 'HOTEIYA', category: 'Sandwich Stand' },
   { youtubeId: '5SvSdn6lqN0', title: 'Gen Sekikawa', category: 'Running' },
   { youtubeId: 'nNoFhJRY0HQ', title: 'White Seed', category: 'Craft Beer' },
@@ -162,6 +164,12 @@ const handleScroll = () => {
     horizontalTrack.value.style.transform = `translate3d(-${translateX}px, 0, 0)`;
   }
 };
+
+// --- Contact Form State ---
+const contact = ref({ name: '', email: '', message: '', consent: false });
+const contactErrors = ref({});
+const isSubmitting = ref(false);
+const submitSuccess = ref(false);
 
 // --- Contact Form Helpers ---
 const validateContact = () => {
@@ -373,7 +381,7 @@ onUnmounted(() => {
           <article v-for="item in portfolioData" :key="item.id" class="card">
             <div 
               class="card-thumb" 
-              @click="(e) => openVideoModal(item, e)" 
+              @click="(e) => openVideoModal(item, e)"
               tabindex="0"
               @keydown.enter="(e) => openVideoModal(item, e)"
               :aria-label="`${item.title}の動画を再生する`"
@@ -484,17 +492,21 @@ onUnmounted(() => {
     </Transition>
 
     <Transition name="fade-modal">
-      <div v-if="isVideoModalOpen" class="modal-backdrop" @click.self="closeVideoModal" role="dialog" aria-modal="true">
+      <div v-if="isVideoModalOpen" class="modal-backdrop modal-backdrop--video" @click.self="closeVideoModal" role="dialog" aria-modal="true" :aria-label="currentVideo?.title">
         <div class="modal-content modal-content--modern-video">
           <button class="modal-close-btn modal-close-btn--video" @click="closeVideoModal" aria-label="閉じる">✕</button>
+
           <div class="video-wrapper">
-            <iframe v-if="currentVideo" 
+            <iframe
+              v-if="currentVideo"
               :src="`https://www.youtube-nocookie.com/embed/${currentVideo.youtubeId}?autoplay=1&rel=0`"
-              title="YouTube video player" frameborder="0"
+              title="YouTube video player"
+              frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen>
-            </iframe>
+              allowfullscreen
+            ></iframe>
           </div>
+
           <div v-if="currentVideo" class="video-credits">
             <div class="video-credits-meta">
               <span class="video-credits-category">{{ currentVideo.category }}</span>
@@ -509,6 +521,7 @@ onUnmounted(() => {
               </template>
             </dl>
           </div>
+
         </div>
       </div>
     </Transition>
@@ -733,14 +746,14 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   aspect-ratio: 9 / 16;
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.16);
-  background-color: rgba(12, 12, 12, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: box-shadow 0.4s ease; 
+  background-color: transparent;
+  border: 1px solid rgba(12, 12, 12, 0.06);
+  box-shadow: 0 30px 100px rgba(12, 12, 12, 0.14);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); 
 }
 
 .short-dummy-bg { width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02)); }
-.short-card-wrapper:hover .short-thumb { box-shadow: 0 26px 90px rgba(0, 0, 0, 0.22); }
+.short-card-wrapper:hover .short-thumb { box-shadow: 0 40px 140px rgba(12, 12, 12, 0.35); }
 
 .short-info { 
   margin-top: 16px; 
@@ -755,6 +768,7 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   object-fit: cover;
   pointer-events: none;
   user-select: none;
+  transform: scale(1.35);
 }
 
 /* =========================================================
@@ -801,89 +815,104 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .modal-content--contact { max-width: 600px; padding: 64px 48px; overflow: hidden; }
 
 /* 長編動画（16:9）用モーダル */
-.modal-content--modern-video { max-width: 1100px; background: #0c0c0c; border-radius: 16px; overflow: hidden; box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8); }
-.modal-content--modern-video .modal-close-btn { top: 16px; right: 16px; background: rgba(0, 0, 0, 0.5); }
-.modal-content--modern-video .modal-close-btn:hover { background: rgba(255, 255, 255, 0.2); }
-.video-wrapper { width: 100%; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; background: #000; }
-.video-wrapper iframe { width: 100%; height: 100%; }
+.modal-backdrop--video {
+  align-items: flex-start;
+  overflow-y: auto;
+  padding: 40px 24px;
+}
 
-/* --- Video Credits Area --- */
+.modal-content--modern-video {
+  max-width: 1100px;
+  background: #0c0c0c;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 48px 120px rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  margin: auto;
+}
+.modal-content--modern-video .modal-close-btn {
+  top: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(247, 244, 239, 0.7);
+}
+.modal-content--modern-video .modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #f7f4ef;
+  transform: rotate(90deg);
+}
+
+.video-wrapper { width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.video-wrapper iframe { width: 100%; height: 100%; display: block; }
+
+/* --- Video Credits --- */
 .video-credits {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 40px;
-  padding: 32px 40px;
-  background: #0c0c0c;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 48px;
+  padding: 36px 48px 40px;
+  border-top: 1px solid rgba(247, 244, 239, 0.07);
 }
 
-.video-credits-meta {
-  flex-shrink: 0;
-}
+.video-credits-meta { flex-shrink: 0; }
 
 .video-credits-category {
   display: block;
   font-family: var(--font-sans);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: rgba(247, 244, 239, 0.45);
-  margin-bottom: 8px;
+  color: rgba(247, 244, 239, 0.35);
+  margin-bottom: 10px;
 }
 
 .video-credits-title {
   font-family: var(--font-en);
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: #f7f4ef;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .credits-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px 48px;
+  align-items: flex-start;
+  gap: 24px 56px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.credits-row {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
+.credits-row { display: flex; flex-direction: column; gap: 6px; }
 
 .credits-role {
   font-family: var(--font-sans);
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(247, 244, 239, 0.4);
+  color: rgba(247, 244, 239, 0.32);
 }
 
 .credits-name {
   font-family: var(--font-en);
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 400;
-  letter-spacing: 0.04em;
-  color: rgba(247, 244, 239, 0.85);
-  margin: 0;
   font-style: italic;
+  letter-spacing: 0.02em;
+  color: rgba(247, 244, 239, 0.82);
+  margin: 0;
 }
 
 @media (max-width: 768px) {
-  .video-credits {
-    flex-direction: column;
-    gap: 24px;
-    padding: 24px 20px;
-  }
-  .credits-list { gap: 16px 32px; }
-  .video-credits-title { font-size: 1.25rem; }
+  .modal-backdrop--video { padding: 16px 12px; }
+  .video-credits { flex-direction: column; gap: 28px; padding: 28px 24px 32px; }
+  .video-credits-title { font-size: 1.3rem; }
+  .credits-list { gap: 20px 36px; }
 }
 
 /* ★ ショート動画（9:16）専用モーダル */
