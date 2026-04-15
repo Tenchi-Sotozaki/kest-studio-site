@@ -1,23 +1,47 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
-import portfolioData from '../components/portfolio.json';
 
 // --- State Management ---
 const isContactModalOpen = ref(false);
-const isVideoModalOpen = ref(false);
-const currentVideo = ref(null);
-const modalTriggerElement = ref(null);
 const isScrolled = ref(false);
+const modalTriggerElement = ref(null);
 
-// ★ショート動画用のモーダル状態
+// ★ 長編動画用の状態
+const isVideoModalOpen = ref(false);
+const currentVideoId = ref('');
+const currentVideoType = ref(''); // 'youtube' | 'vimeo' | 'local'
+const currentVideo = ref(null); // クレジットなどを表示するため、動画データ全体を保持
+
+// ★ ショート動画用の状態
 const isShortModalOpen = ref(false);
 const currentShortId = ref('');
+const currentShortType = ref('');
 
 // --- ★nicopi風 横スクロール用の状態 ---
 const shortVideoSection = ref(null);
 const horizontalTrack = ref(null); 
 
-// ★ 追加いただいた「Hick up」をリストに反映しました！
+// =========================================================
+// ★ Long Works（手がけた映像）のデータ
+// 外部のjsonファイルを使わず、ここで直接管理するように変更しました
+// =========================================================
+const portfolioData = [
+  {
+    id: 'vimeo-1165686334',
+    vimeoId: '1165686334',
+    title: '浅草', // ★後で変更してください
+    category: 'Cinematic', // ★後で変更してください
+    thumbnail: '/Works用のサムネイル画像.jpg', // ★後で用意した画像のパスに変更してください
+    credits: {
+      'Direction': 'Blanc films',
+      'Sound design': 'Kest Studio'
+    }
+  }
+];
+
+// =========================================================
+// ★ Shorts（ショート動画）のデータ
+// =========================================================
 const shortVideos = [
   { youtubeId: 'qhktiYq6Ifo', title: 'Hick up', category: 'coffee stand' },
   { youtubeId: 'XihcgtAgbD4', title: 'HOTEIYA', category: 'Sandwich Stand' },
@@ -75,7 +99,19 @@ const updateHeaderHeightVar = () => {
 
 // --- Methods ---
 const openVideoModal = (item, event) => {
-  currentVideo.value = item;
+  currentVideo.value = item; // クレジット表示のためにデータ全体をセット
+
+  if (item.youtubeId) {
+    currentVideoId.value = item.youtubeId;
+    currentVideoType.value = 'youtube';
+  } else if (item.vimeoId) {
+    currentVideoId.value = item.vimeoId;
+    currentVideoType.value = 'vimeo';
+  } else if (item.videoUrl) {
+    currentVideoId.value = item.videoUrl;
+    currentVideoType.value = 'local';
+  }
+  
   isVideoModalOpen.value = true;
   modalTriggerElement.value = event?.currentTarget || null;
   nextTick(() => {
@@ -87,13 +123,22 @@ const openVideoModal = (item, event) => {
 
 const closeVideoModal = () => {
   isVideoModalOpen.value = false;
+  currentVideoId.value = '';
+  currentVideoType.value = '';
   currentVideo.value = null;
   document.body.style.overflow = '';
   if (modalTriggerElement.value) modalTriggerElement.value.focus();
 };
 
-const openShortModal = (youtubeId, event) => {
-  currentShortId.value = youtubeId;
+const openShortModal = (video, event) => {
+  if (video.youtubeId) {
+    currentShortId.value = video.youtubeId;
+    currentShortType.value = 'youtube';
+  } else if (video.vimeoId) {
+    currentShortId.value = video.vimeoId;
+    currentShortType.value = 'vimeo';
+  }
+
   isShortModalOpen.value = true;
   modalTriggerElement.value = event?.currentTarget || null;
   nextTick(() => {
@@ -106,6 +151,7 @@ const openShortModal = (youtubeId, event) => {
 const closeShortModal = () => {
   isShortModalOpen.value = false;
   currentShortId.value = '';
+  currentShortType.value = '';
   document.body.style.overflow = '';
   if (modalTriggerElement.value) modalTriggerElement.value.focus();
 };
@@ -165,12 +211,6 @@ const handleScroll = () => {
   }
 };
 
-// --- Contact Form State ---
-const contact = ref({ name: '', email: '', message: '', consent: false });
-const contactErrors = ref({});
-const isSubmitting = ref(false);
-const submitSuccess = ref(false);
-
 // --- Contact Form Helpers ---
 const validateContact = () => {
   contactErrors.value = {};
@@ -182,13 +222,17 @@ const validateContact = () => {
   return Object.keys(contactErrors.value).length === 0;
 };
 
+const contact = ref({ name: '', email: '', message: '', consent: false });
+const contactErrors = ref({});
+const isSubmitting = ref(false);
+const submitSuccess = ref(false);
+
 const resetContact = () => {
   contact.value = { name: '', email: '', message: '', consent: false };
   contactErrors.value = {};
   submitSuccess.value = false;
 };
 
-// --- Netlify Form Submit ---
 const submitContact = async () => {
   if (!validateContact()) return;
   isSubmitting.value = true;
@@ -336,14 +380,20 @@ onUnmounted(() => {
                 <div class="short-card-inner">
                   <div 
                     class="short-thumb"
-                    @click="(e) => openShortModal(video.youtubeId, e)"
+                    @click="(e) => openShortModal(video, e)"
                     tabindex="0"
-                    @keydown.enter="(e) => openShortModal(video.youtubeId, e)"
+                    @keydown.enter="(e) => openShortModal(video, e)"
                     :aria-label="`${video.title}を全画面で再生する`"
                   >
                     <img 
                       v-if="video.youtubeId"
                       :src="`https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`" 
+                      class="real-video"
+                      alt="thumbnail"
+                    />
+                    <img 
+                      v-else-if="video.thumbnail"
+                      :src="video.thumbnail" 
                       class="real-video"
                       alt="thumbnail"
                     />
@@ -370,7 +420,7 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <!-- <section id="portfolio" class="portfolio section">
+    <section id="portfolio" class="portfolio section">
       <div class="container">
         <div class="section-header fade-in-scroll">
           <span class="sub-title">Long Works</span>
@@ -381,12 +431,14 @@ onUnmounted(() => {
           <article v-for="item in portfolioData" :key="item.id" class="card">
             <div 
               class="card-thumb" 
-              @click="(e) => openVideoModal(item, e)"
+              @click="(e) => openVideoModal(item, e)" 
               tabindex="0"
               @keydown.enter="(e) => openVideoModal(item, e)"
               :aria-label="`${item.title}の動画を再生する`"
             >
-              <img :src="item.thumbnail" :alt="item.alt" loading="lazy" width="800" height="450" />
+              <img v-if="item.thumbnail" :src="item.thumbnail" :alt="item.title" loading="lazy" width="800" height="450" />
+              <div v-else style="width: 100%; height: 100%; background: rgba(12,12,12,0.8);"></div>
+              
               <div class="card-overlay">
                 <div class="play-button">
                   <svg viewBox="0 0 24 24" fill="currentColor" class="play-icon"><path d="M8 5v14l11-7z"/></svg>
@@ -400,7 +452,7 @@ onUnmounted(() => {
           </article>
         </div>
       </div>
-    </section> -->
+    </section>
 
     <section id="contact" class="contact section">
       <div class="container">
@@ -498,11 +550,19 @@ onUnmounted(() => {
 
           <div class="video-wrapper">
             <iframe
-              v-if="currentVideo"
-              :src="`https://www.youtube-nocookie.com/embed/${currentVideo.youtubeId}?autoplay=1&rel=0`"
+              v-if="currentVideoType === 'youtube'"
+              :src="`https://www.youtube-nocookie.com/embed/${currentVideoId}?autoplay=1&rel=0`"
               title="YouTube video player"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+            <iframe 
+              v-else-if="currentVideoType === 'vimeo'"
+              :src="`https://player.vimeo.com/video/${currentVideoId}?autoplay=1&title=0&byline=0&portrait=0`"
+              title="Vimeo video player" 
+              frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
               allowfullscreen
             ></iframe>
           </div>
@@ -531,10 +591,17 @@ onUnmounted(() => {
         <div class="modal-content modal-content--short-video">
           <button class="modal-close-btn modal-close-btn--short" @click="closeShortModal" aria-label="閉じる">✕</button>
           <div class="short-video-wrapper">
-            <iframe v-if="currentShortId" 
+            <iframe v-if="currentShortType === 'youtube'" 
               :src="`https://www.youtube-nocookie.com/embed/${currentShortId}?autoplay=1&rel=0`"
               title="YouTube Short video player" frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              style="width: 100%; height: 100%;">
+            </iframe>
+            <iframe v-else-if="currentShortType === 'vimeo'" 
+              :src="`https://player.vimeo.com/video/${currentShortId}?autoplay=1&title=0&byline=0&portrait=0`"
+              title="Vimeo Short video player" frameborder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
               allowfullscreen
               style="width: 100%; height: 100%;">
             </iframe>
