@@ -3,8 +3,12 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 
 // --- State Management ---
 const isContactModalOpen = ref(false);
+const isPrivacyModalOpen = ref(false);
 const isScrolled = ref(false);
-const modalTriggerElement = ref(null);
+
+// モーダルは重ねて開けるため（お問い合わせ → プライバシーポリシー）、
+// 「閉じたときに戻すフォーカス先」をスタックで保持する
+const focusReturnStack = [];
 
 // ★ 長編動画用の状態
 const isVideoModalOpen = ref(false);
@@ -19,7 +23,11 @@ const currentShortType = ref('');
 
 // --- ★nicopi風 横スクロール用の状態 ---
 const shortVideoSection = ref(null);
-const horizontalTrack = ref(null); 
+const horizontalTrack = ref(null);
+
+// スクロールジャックはPCのみ。スマホはネイティブの横スワイプ（scroll-snap）にフォールバック
+const isScrollJackEnabled = ref(true);
+let mqDesktop = null;
 
 // =========================================================
 // ★ Long Works（手がけた映像）のデータ
@@ -98,6 +106,82 @@ const updateHeaderHeightVar = () => {
   document.documentElement.style.setProperty('--kest-header-h', `${Math.round(h)}px`);
 };
 
+// =========================================================
+// モーダル共通（フォーカス管理・フォーカストラップ）
+// =========================================================
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled]):not([type="hidden"])',
+  'textarea:not([disabled])',
+  'select:not([disabled])',
+  'iframe',
+  '[tabindex]:not([tabindex="-1"])'
+].join(',');
+
+const isAnyModalOpen = () =>
+  isVideoModalOpen.value || isShortModalOpen.value ||
+  isContactModalOpen.value || isPrivacyModalOpen.value;
+
+/** 開いているモーダルのうち、DOM上いちばん後ろ＝最前面のものを返す */
+const getTopModal = () => {
+  const modals = document.querySelectorAll('.modal-backdrop');
+  return modals.length ? modals[modals.length - 1] : null;
+};
+
+/** モーダルを開く直前の呼び出し元を控え、モーダル内へフォーカスを移す */
+const enterModal = (event, closeBtnSelector) => {
+  focusReturnStack.push(event?.currentTarget || null);
+  document.body.style.overflow = 'hidden';
+  nextTick(() => {
+    const closeBtn = document.querySelector(closeBtnSelector);
+    if (closeBtn) closeBtn.focus();
+  });
+};
+
+/** モーダルを閉じ、開く前の要素へフォーカスを戻す */
+const leaveModal = () => {
+  const returnTo = focusReturnStack.pop();
+  nextTick(() => {
+    // まだ他のモーダルが開いていればスクロールロックは維持する
+    document.body.style.overflow = isAnyModalOpen() ? 'hidden' : '';
+    if (returnTo && document.contains(returnTo)) returnTo.focus();
+  });
+};
+
+/** モーダル内でフォーカス可能な要素を、表示中のものに絞って取得する */
+const getFocusableIn = (root) => {
+  const all = Array.from(root.querySelectorAll(FOCUSABLE_SELECTOR));
+  const visible = all.filter((el) => {
+    if (el.hidden || el.getAttribute('aria-hidden') === 'true') return false;
+    // checkVisibility 非対応の環境では絞り込まない（トラップが無効化されるのを防ぐ）
+    return typeof el.checkVisibility === 'function' ? el.checkVisibility() : true;
+  });
+  return visible.length ? visible : all;
+};
+
+/** Tab / Shift+Tab を最前面モーダルの内側で循環させる */
+const trapFocus = (e) => {
+  const modal = getTopModal();
+  if (!modal) return;
+
+  const items = getFocusableIn(modal);
+  if (!items.length) return;
+
+  const first = items[0];
+  const last = items[items.length - 1];
+  const active = document.activeElement;
+  const isOutside = !modal.contains(active);
+
+  if (e.shiftKey && (active === first || isOutside)) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && (active === last || isOutside)) {
+    e.preventDefault();
+    first.focus();
+  }
+};
+
 // --- Methods ---
 const openVideoModal = (item, event) => {
   currentVideo.value = item; // クレジット表示のためにデータ全体をセット
@@ -114,12 +198,7 @@ const openVideoModal = (item, event) => {
   }
   
   isVideoModalOpen.value = true;
-  modalTriggerElement.value = event?.currentTarget || null;
-  nextTick(() => {
-    const closeBtn = document.querySelector('.modal-close-btn--video');
-    if (closeBtn) closeBtn.focus();
-  });
-  document.body.style.overflow = 'hidden';
+  enterModal(event, '.modal-close-btn--video');
 };
 
 const closeVideoModal = () => {
@@ -127,8 +206,7 @@ const closeVideoModal = () => {
   currentVideoId.value = '';
   currentVideoType.value = '';
   currentVideo.value = null;
-  document.body.style.overflow = '';
-  if (modalTriggerElement.value) modalTriggerElement.value.focus();
+  leaveModal();
 };
 
 const openShortModal = (video, event) => {
@@ -141,43 +219,48 @@ const openShortModal = (video, event) => {
   }
 
   isShortModalOpen.value = true;
-  modalTriggerElement.value = event?.currentTarget || null;
-  nextTick(() => {
-    const closeBtn = document.querySelector('.modal-close-btn--short');
-    if (closeBtn) closeBtn.focus();
-  });
-  document.body.style.overflow = 'hidden';
+  enterModal(event, '.modal-close-btn--short');
 };
 
 const closeShortModal = () => {
   isShortModalOpen.value = false;
   currentShortId.value = '';
   currentShortType.value = '';
-  document.body.style.overflow = '';
-  if (modalTriggerElement.value) modalTriggerElement.value.focus();
+  leaveModal();
 };
 
 const openContactModal = (event) => {
   isContactModalOpen.value = true;
-  modalTriggerElement.value = event?.currentTarget || null;
-  nextTick(() => {
-    const closeBtn = document.querySelector('.modal-close-btn--contact');
-    if (closeBtn) closeBtn.focus();
-  });
-  document.body.style.overflow = 'hidden';
+  enterModal(event, '.modal-close-btn--contact');
 };
 
 const closeContactModal = () => {
   isContactModalOpen.value = false;
-  document.body.style.overflow = '';
-  if (modalTriggerElement.value) modalTriggerElement.value.focus();
+  leaveModal();
+};
+
+const openPrivacyModal = (event) => {
+  isPrivacyModalOpen.value = true;
+  enterModal(event, '.modal-close-btn--privacy');
+};
+
+const closePrivacyModal = () => {
+  isPrivacyModalOpen.value = false;
+  leaveModal();
 };
 
 const handleKeydown = (e) => {
   if (e.key === 'Escape') {
-    if (isVideoModalOpen.value) closeVideoModal();
+    // 最前面のモーダルから順に閉じる
+    if (isPrivacyModalOpen.value) closePrivacyModal();
+    else if (isVideoModalOpen.value) closeVideoModal();
     else if (isShortModalOpen.value) closeShortModal();
     else if (isContactModalOpen.value) closeContactModal();
+    return;
+  }
+
+  if (e.key === 'Tab' && isAnyModalOpen()) {
+    trapFocus(e);
   }
 };
 
@@ -189,7 +272,8 @@ const handleScroll = () => {
     updateHeaderHeightVar();
   });
 
-  if (shortVideoSection.value && horizontalTrack.value) {
+  // スマホではスクロールジャックを行わず、ネイティブの横スワイプに任せる
+  if (isScrollJackEnabled.value && shortVideoSection.value && horizontalTrack.value) {
     const rect = shortVideoSection.value.getBoundingClientRect();
     const sectionTop = rect.top;
     const scrollDistance = rect.height - window.innerHeight;
@@ -270,13 +354,33 @@ const submitContact = async () => {
   }
 };
 
+// --- スクロールモードの切替（PC: スクロールジャック / スマホ: 横スワイプ） ---
+const applyScrollMode = () => {
+  isScrollJackEnabled.value = mqDesktop ? mqDesktop.matches : true;
+
+  // スワイプモードへ移る際は、JSが当てた transform を必ず解除しておく
+  if (!isScrollJackEnabled.value && horizontalTrack.value) {
+    horizontalTrack.value.style.transform = '';
+  }
+};
+
+const handleScrollModeChange = () => {
+  applyScrollMode();
+  handleScroll();
+};
+
 // --- Lifecycle ---
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
   window.addEventListener('scroll', handleScroll, { passive: true });
   window.addEventListener('resize', handleScroll);
-  
-  setTimeout(handleScroll, 50); 
+
+  // CSS 側の @media (max-width: 768px) と境界を揃える
+  mqDesktop = window.matchMedia('(min-width: 769px)');
+  applyScrollMode();
+  mqDesktop.addEventListener('change', handleScrollModeChange);
+
+  setTimeout(handleScroll, 50);
   setTimeout(updateHeaderHeightVar, 0);
 
   let lastIndex = 0;
@@ -295,9 +399,13 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
   window.removeEventListener('scroll', handleScroll);
   window.removeEventListener('resize', handleScroll);
+  if (mqDesktop) mqDesktop.removeEventListener('change', handleScrollModeChange);
 
   if (headerHeightRaf) cancelAnimationFrame(headerHeightRaf);
   if (fontInterval) clearInterval(fontInterval);
+
+  // モーダルを開いたままアンマウントされた場合にスクロールが固まるのを防ぐ
+  document.body.style.overflow = '';
 });
 </script>
 
@@ -334,6 +442,14 @@ onUnmounted(() => {
               <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
             </svg>
             <span>Instagram</span>
+          </a>
+
+          <a href="https://www.tiktok.com/@kest.studio" target="_blank" rel="noopener noreferrer" class="nav-social">
+            <svg class="icon-tiktok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 4v12a4 4 0 1 1-4-4"></path>
+              <path d="M13 4c0 2.76 2.24 5 5 5"></path>
+            </svg>
+            <span>TikTok</span>
           </a>
         </nav>
       </div>
@@ -379,11 +495,13 @@ onUnmounted(() => {
                 class="short-card-wrapper"
               >
                 <div class="short-card-inner">
-                  <div 
+                  <div
                     class="short-thumb"
-                    @click="(e) => openShortModal(video, e)"
+                    role="button"
                     tabindex="0"
-                    @keydown.enter="(e) => openShortModal(video, e)"
+                    @click="(e) => openShortModal(video, e)"
+                    @keydown.enter.prevent="(e) => openShortModal(video, e)"
+                    @keydown.space.prevent="(e) => openShortModal(video, e)"
                     :aria-label="`${video.title}を全画面で再生する`"
                   >
                     <img 
@@ -430,11 +548,13 @@ onUnmounted(() => {
 
         <div class="grid">
           <article v-for="item in portfolioData" :key="item.id" class="card">
-            <div 
-              class="card-thumb" 
-              @click="(e) => openVideoModal(item, e)" 
+            <div
+              class="card-thumb"
+              role="button"
               tabindex="0"
-              @keydown.enter="(e) => openVideoModal(item, e)"
+              @click="(e) => openVideoModal(item, e)"
+              @keydown.enter.prevent="(e) => openVideoModal(item, e)"
+              @keydown.space.prevent="(e) => openVideoModal(item, e)"
               :aria-label="`${item.title}の動画を再生する`"
             >
               <img v-if="item.thumbnail" :src="item.thumbnail" :alt="item.title" loading="lazy" width="800" height="450" />
@@ -481,6 +601,14 @@ onUnmounted(() => {
                 Instagram (@kest_films)
               </a>
 
+              <a href="https://www.tiktok.com/@kest.studio" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-social">
+                <svg class="icon-tiktok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 4v12a4 4 0 1 1-4-4"></path>
+                  <path d="M13 4c0 2.76 2.24 5 5 5"></path>
+                </svg>
+                TikTok (@kest.studio)
+              </a>
+
               <a href="tel:+819064409072" class="btn btn-outline">
                 Tel: 090-6440-9072
               </a>
@@ -492,6 +620,9 @@ onUnmounted(() => {
 
     <footer class="footer">
       <p>&copy; {{ new Date().getFullYear() }} Kest Studio. All Rights Reserved.</p>
+      <p class="footer-links">
+        <button type="button" class="link" @click="openPrivacyModal">プライバシーポリシー</button>
+      </p>
     </footer>
 
     <Transition name="fade-modal">
@@ -524,7 +655,9 @@ onUnmounted(() => {
 
               <label class="consent-label">
                 <input type="checkbox" v-model="contact.consent" />
-                <span><a href="#" class="link">プライバシーポリシー</a>に同意する</span>
+                <span>
+                  <button type="button" class="link" @click="openPrivacyModal">プライバシーポリシー</button>に同意する
+                </span>
               </label>
               <span class="error" v-if="contactErrors.consent">{{ contactErrors.consent }}</span>
 
@@ -611,6 +744,130 @@ onUnmounted(() => {
       </div>
     </Transition>
 
+    <!-- ★ プライバシーポリシー（お問い合わせモーダルの上に重ねて開くため、DOM上は最後に置く） -->
+    <Transition name="fade-modal">
+      <div
+        v-if="isPrivacyModalOpen"
+        class="modal-backdrop"
+        @click.self="closePrivacyModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="privacy-title"
+      >
+        <div class="modal-content modal-content--privacy">
+          <button class="modal-close-btn modal-close-btn--privacy" @click="closePrivacyModal" aria-label="閉じる">✕</button>
+
+          <div class="modal-body legal-body">
+            <h3 id="privacy-title">プライバシーポリシー</h3>
+            <p class="legal-lead">
+              Kest Studio（以下「当スタジオ」といいます）は、本ウェブサイトを通じて取得する個人情報の取り扱いについて、
+              以下のとおり方針を定めます。
+            </p>
+
+            <section class="legal-section">
+              <h4>1. 事業者情報</h4>
+              <dl class="legal-dl">
+                <div><dt>名称</dt><dd>Kest Studio</dd></div>
+                <div><dt>所在地</dt><dd>北海道函館市</dd></div>
+                <div><dt>運営責任者</dt><dd>外崎 天智</dd></div>
+                <div><dt>連絡先</dt><dd>keststudiohkd@gmail.com ／ 090-6440-9072</dd></div>
+              </dl>
+            </section>
+
+            <section class="legal-section">
+              <h4>2. 取得する情報</h4>
+              <p>お問い合わせフォームの送信時に、以下の情報を取得します。</p>
+              <ul>
+                <li>お名前</li>
+                <li>メールアドレス</li>
+                <li>お問い合わせ内容に記載された情報</li>
+              </ul>
+              <p>
+                このほか、サイトの利用状況に応じて、IPアドレス・ブラウザの種類・アクセス日時などの
+                技術的な情報が自動的に記録される場合があります。
+              </p>
+            </section>
+
+            <section class="legal-section">
+              <h4>3. 利用目的</h4>
+              <p>取得した情報は、次の目的の範囲でのみ利用します。</p>
+              <ul>
+                <li>お問い合わせへの回答およびご連絡</li>
+                <li>お見積り、ご提案、映像制作に関する打ち合わせ</li>
+                <li>本ウェブサイトの品質改善および不具合対応</li>
+              </ul>
+              <p>上記の目的を超えて利用する場合は、あらためてご本人の同意をいただきます。</p>
+            </section>
+
+            <section class="legal-section">
+              <h4>4. 第三者への提供</h4>
+              <p>
+                取得した個人情報を、ご本人の同意なく第三者へ提供・販売することはありません。
+                ただし、法令に基づく開示請求があった場合はこの限りではありません。
+              </p>
+            </section>
+
+            <section class="legal-section">
+              <h4>5. 外部サービスの利用</h4>
+              <p>
+                本ウェブサイトでは、機能提供のために以下の外部サービスを利用しています。
+                これらのサービスの提供事業者に対し、通信の性質上、IPアドレス等の情報が送信される場合があります。
+              </p>
+              <ul>
+                <li><strong>Netlify</strong> — サイトのホスティングおよびお問い合わせフォームの受信</li>
+                <li><strong>YouTube / Vimeo</strong> — 作品動画の埋め込み再生（YouTube はプライバシー強化モードで配信）</li>
+                <li><strong>Google Fonts</strong> — ウェブフォントの配信</li>
+              </ul>
+              <p>各サービスにおける情報の取り扱いは、それぞれの提供事業者が定める方針に従います。</p>
+            </section>
+
+            <section class="legal-section">
+              <h4>6. Cookie について</h4>
+              <p>
+                当スタジオは、広告配信や個人を特定する目的で Cookie を使用していません。
+                埋め込み動画などの外部サービスが Cookie を利用する場合がありますが、
+                ブラウザの設定によって無効化できます。無効化した場合、一部の機能がご利用いただけないことがあります。
+              </p>
+            </section>
+
+            <section class="legal-section">
+              <h4>7. 情報の管理と保管期間</h4>
+              <p>
+                取得した個人情報は、漏えい・滅失・毀損を防ぐために必要かつ適切な措置を講じて管理します。
+                お問い合わせに関する情報は、対応の完了後、必要がなくなった時点で速やかに削除します。
+              </p>
+            </section>
+
+            <section class="legal-section">
+              <h4>8. 開示・訂正・削除等のご請求</h4>
+              <p>
+                ご自身の個人情報について、開示・訂正・追加・削除・利用停止をご希望の場合は、
+                下記の窓口までご連絡ください。ご本人であることを確認のうえ、法令に従い速やかに対応します。
+              </p>
+            </section>
+
+            <section class="legal-section">
+              <h4>9. 本ポリシーの変更</h4>
+              <p>
+                法令の改正やサービス内容の変更に伴い、本ポリシーを改定することがあります。
+                改定後の内容は、本ウェブサイトに掲載した時点から効力を生じます。
+              </p>
+            </section>
+
+            <section class="legal-section">
+              <h4>10. お問い合わせ窓口</h4>
+              <dl class="legal-dl">
+                <div><dt>メール</dt><dd><a href="mailto:keststudiohkd@gmail.com">keststudiohkd@gmail.com</a></dd></div>
+                <div><dt>電話</dt><dd><a href="tel:+819064409072">090-6440-9072</a></dd></div>
+              </dl>
+            </section>
+
+            <p class="legal-date">制定日：2026年4月20日</p>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
   </div>
 </template>
 
@@ -692,8 +949,10 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .nav a:hover { opacity: 0.55; }
 .nav-social { display: flex; align-items: center; gap: 8px; position: relative; }
 .nav-social::before { content: ''; position: absolute; left: -20px; top: 50%; transform: translateY(-50%); width: 1px; height: 16px; background-color: currentColor; opacity: 0.4; }
-.icon-insta, .icon-youtube { width: 1.2em; height: 1.2em; transition: transform 0.3s ease; }
-.nav-social:hover .icon-insta, .nav-social:hover .icon-youtube { transform: scale(1.1); }
+.icon-insta, .icon-youtube, .icon-tiktok { width: 1.2em; height: 1.2em; transition: transform 0.3s ease; }
+.nav-social:hover .icon-insta,
+.nav-social:hover .icon-youtube,
+.nav-social:hover .icon-tiktok { transform: scale(1.1); }
 
 /* --- Hero --- */
 .hero { height: 100vh; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -738,29 +997,45 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   height: 100vh;
   min-height: 100vh;
   width: 100vw;
-  --shorts-header-space: 84px;
   overflow-x: hidden;
   overflow-y: hidden;
   display: flex;
-  flex-direction: column; 
-  align-items: center;     
-  justify-content: center;
-  padding-top: 0;
-  padding-bottom: 0;
-  box-sizing: border-box; 
-}
+  flex-direction: column;
+  box-sizing: border-box;
 
-.shorts-sticky {
-  --shorts-stage-shift-y: -48px;
+  /* 見出しとカードの間隔 */
+  --shorts-gap-y: 40px;
+  /* 見出し上の余白（固定ヘッダーの下） */
+  --shorts-top-space: 24px;
+  --shorts-bottom-space: 32px;
+  /* カード下のタイトル＋カテゴリ分の確保高さ */
+  --shorts-info-h: 76px;
+
+  padding-top: calc(var(--kest-header-h, 80px) + var(--shorts-top-space));
+  padding-bottom: var(--shorts-bottom-space);
+
+  /*
+    残りの高さからカード幅を逆算する。
+    9:16 なので 幅 = 高さ * 0.5625。
+    見出し・余白・カード下テキスト分を差し引くので文字と重ならない。
+  */
+  --shorts-avail-h: calc(
+    100vh
+    - var(--kest-header-h, 80px)
+    - var(--shorts-top-space)
+    - var(--shorts-bottom-space)
+    - var(--shorts-gap-y)
+    - var(--shorts-info-h)
+    - 80px /* 見出し h2 の想定高さ */
+  );
+  --short-card-w: clamp(140px, calc(var(--shorts-avail-h) * 0.5625), 260px);
 }
 
 .shorts-header {
-  position: absolute;
-  top: calc(var(--kest-header-h, 80px) + 18px); 
-  left: 0;
-  right: 0;
+  position: relative;
+  flex: 0 0 auto;
   width: min(1100px, calc(100% - 48px));
-  margin: 0 auto;
+  margin: 0 auto var(--shorts-gap-y);
   text-align: center;
   pointer-events: none;
   z-index: 3;
@@ -770,19 +1045,16 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 }
 
 .shorts-stage {
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   display: flex;
-  height: calc(100vh - var(--kest-header-h, 80px) - var(--shorts-header-space));
-  padding-top: calc(var(--kest-header-h, 80px) + var(--shorts-header-space));
   align-items: center;
 }
 
 .shorts-track-container {
   width: 100%;
-  padding-top: 24px;
-  padding-bottom: 24px;
   overflow: hidden;
-  transform: translateY(var(--shorts-stage-shift-y, 0px));
 }
 
 .shorts-track {
@@ -794,8 +1066,8 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 }
 
 .short-card-wrapper {
-  width: 260px; 
-  flex-shrink: 0; 
+  width: var(--short-card-w, 260px);
+  flex-shrink: 0;
   cursor: pointer;
   position: relative;
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -823,9 +1095,10 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .short-dummy-bg { width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02)); }
 .short-card-wrapper:hover .short-thumb { box-shadow: 0 40px 140px rgba(12, 12, 12, 0.35); }
 
-.short-info { 
-  margin-top: 16px; 
-  text-align: center; 
+.short-info {
+  margin-top: 16px;
+  min-height: 60px; /* --shorts-info-h (76px) - margin-top */
+  text-align: center;
 }
 .short-info h3 { font-family: var(--font-en); font-size: 1.25rem; font-weight: 600; color: var(--color-ink); margin-bottom: 6px; letter-spacing: -0.01em; }
 .short-info .category { font-family: var(--font-sans); font-size: 0.78rem; color: var(--color-ink-muted); letter-spacing: 0.18em; text-transform: uppercase; }
@@ -932,7 +1205,8 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   font-weight: 600;
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: rgba(247, 244, 239, 0.35);
+  /* WCAG AA（4.5:1）を満たす最小限の濃さ。0.35 では約2.7:1 で不足していた */
+  color: rgba(247, 244, 239, 0.5);
   margin-bottom: 10px;
 }
 
@@ -963,7 +1237,8 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   font-weight: 700;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(247, 244, 239, 0.32);
+  /* 同上：0.32 → 0.5 でコントラスト比 約5.1:1 */
+  color: rgba(247, 244, 239, 0.5);
 }
 
 .credits-name {
@@ -1008,12 +1283,100 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .consent-label { display: flex; align-items: center; gap: 12px; font-size: 0.95rem; cursor: pointer; margin-bottom: 32px; color: var(--color-ink-muted); }
 .success-message { margin-top: 24px; padding: 16px; background-color: rgba(255, 255, 255, 0.65); color: #0c0c0c; border: 1px solid rgba(12, 12, 12, 0.16); border-radius: 14px; text-align: center; font-weight: 700; }
 
+/* --- Footer / テキストリンク風ボタン --- */
+.footer { text-align: center; padding: 48px 24px 56px; color: var(--color-ink-muted); font-size: 0.85rem; }
+.footer p { margin: 0; }
+.footer-links { margin-top: 12px; }
+
+.link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.link:hover { opacity: 0.6; }
+
+/* --- Focus Visible（キーボード操作時のみリングを出す） --- */
+.kest-studio :focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.modal-content--modern-video :focus-visible,
+.modal-content--short-video :focus-visible {
+  outline-color: #f7f4ef;
+}
+
+/* --- Privacy Policy Modal --- */
+/* 外枠は固定したまま、中身だけをスクロールさせる（✕ が流れないように） */
+.modal-content--privacy {
+  max-width: 720px;
+  max-height: min(86vh, 900px);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.modal-content--privacy .legal-body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 56px 48px 48px;
+}
+/* 明るい背景のモーダルでは ✕ が白のままだと見えないため色を反転 */
+.modal-content--privacy .modal-close-btn,
+.modal-content--contact .modal-close-btn {
+  background: rgba(12, 12, 12, 0.06);
+  color: var(--color-ink);
+}
+.modal-content--privacy .modal-close-btn:hover,
+.modal-content--contact .modal-close-btn:hover {
+  background: var(--color-accent);
+  color: var(--color-paper);
+}
+.modal-content--privacy .modal-close-btn { top: 16px; right: 16px; }
+
+.legal-body h3 { text-align: left; margin-bottom: 20px; }
+.legal-lead { color: var(--color-ink-muted); font-size: 0.92rem; line-height: 1.9; margin: 0 0 8px; }
+.legal-section { margin-top: 32px; }
+.legal-section h4 {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin: 0 0 12px;
+  color: var(--color-ink);
+}
+.legal-section p { margin: 0 0 12px; font-size: 0.9rem; line-height: 1.9; color: var(--color-ink-muted); }
+.legal-section ul { margin: 0 0 12px; padding-left: 1.25em; font-size: 0.9rem; line-height: 1.9; color: var(--color-ink-muted); }
+.legal-section li { margin-bottom: 4px; }
+.legal-section strong { color: var(--color-ink); font-weight: 700; }
+.legal-section a { color: var(--color-ink); text-underline-offset: 3px; }
+
+.legal-dl { margin: 0; font-size: 0.9rem; line-height: 1.9; }
+.legal-dl > div { display: flex; gap: 16px; padding: 6px 0; border-bottom: 1px solid var(--color-border); }
+.legal-dl dt { flex: 0 0 7.5em; font-weight: 700; color: var(--color-ink); }
+.legal-dl dd { margin: 0; color: var(--color-ink-muted); }
+
+.legal-date { margin-top: 40px; font-size: 0.82rem; color: var(--color-ink-muted); text-align: right; }
+
 /* --- Animations --- */
 .fade-modal-enter-active, .fade-modal-leave-active { transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .fade-modal-enter-from, .fade-modal-leave-to { opacity: 0; transform: scale(0.95) translateY(20px); }
 .fade-in { opacity: 0; animation: fadeInUp 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 .delay-3 { animation-delay: 0.3s; }
 @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- Responsive (中間幅：SNS が3つになりナビが詰まるためラベルを畳む) --- */
+@media (max-width: 1080px) {
+  .nav { gap: 26px; }
+  .nav-social span { display: none; }
+  .nav-social::before { left: -13px; }
+}
 
 /* --- Responsive (スマホ用) --- */
 @media (max-width: 768px) {
@@ -1030,10 +1393,65 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   .btn { width: 100%; min-width: auto; }
   .modal-content--contact { padding: 40px 24px; }
   
-  .shorts-track { padding: 0 10vw; gap: 64px; } 
-  .short-card-wrapper { width: 200px; } 
-  .shorts-sticky { --shorts-header-space: 72px; }
-  .shorts-sticky { --shorts-stage-shift-y: -32px; }
+  /* =========================================================
+     スマホ：400vh のスクロールジャックをやめ、
+     ネイティブの横スワイプ + scroll-snap にフォールバック
+     （境界は script 側の matchMedia('(min-width: 769px)') と一致）
+  ========================================================= */
+  .shorts-section {
+    height: auto;
+  }
+
+  .shorts-sticky {
+    position: static;
+    height: auto;
+    min-height: 0;
+    width: 100%;
+    overflow: visible;
+    --shorts-gap-y: 28px;
+    --short-card-w: clamp(190px, 58vw, 260px);
+    padding-top: calc(var(--kest-header-h, 80px) + 32px);
+    padding-bottom: 64px;
+  }
+
+  .shorts-stage {
+    display: block;
+    flex: none;
+  }
+
+  .shorts-track-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .shorts-track-container::-webkit-scrollbar { display: none; }
+
+  .shorts-track {
+    gap: 24px;
+    /* 左右に余白を入れて、最初と最後のカードも画面中央にスナップできるようにする */
+    padding: 0 calc((100vw - var(--short-card-w)) / 2);
+    /* JS 側でも解除しているが、切り替え直後の取りこぼし防止に念のため */
+    transform: none !important;
+    will-change: auto;
+  }
+
+  .short-card-wrapper {
+    scroll-snap-align: center;
+  }
+  /* タップ端末では hover の浮き上がりが残るので無効化 */
+  .short-card-wrapper:hover { transform: none; }
+  .short-card-wrapper:hover .short-thumb { box-shadow: 0 30px 100px rgba(12, 12, 12, 0.14); }
+
+  .short-info { min-height: 52px; }
+
+  .modal-content--privacy { max-height: 88vh; }
+  .modal-content--privacy .legal-body { padding: 48px 24px 32px; }
+  .legal-dl > div { flex-direction: column; gap: 2px; }
+  .legal-dl dt { flex: none; }
 
   .modal-content--short-video {
     width: 90vw;

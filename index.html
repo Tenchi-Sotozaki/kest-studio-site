@@ -5,15 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>KestStudio | Films & Visual Storytelling</title>
 
-    <!-- SEO / OGP 基本 -->
+    <!-- SEO 基本 -->
     <meta name="description" content="KestStudioは、映像でブランドの本質を可視化するクリエイティブスタジオです。" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#f7f4ef" />
+    <link rel="canonical" href="/" />
 
-    <!-- Fonts（Vue 側の Playfair に合わせる） -->
+    <!-- ▼▼ 独自ドメイン公開後、この行の URL を実際のドメインに差し替えてください ▼▼
+         例) <meta property="og:url" content="https://keststudio.com/" />
+             <meta property="og:image" content="https://keststudio.com/og-image.jpg" />
+         ※ og:image は絶対URLでないとSNS側でサムネが出ない場合があります ▲▲ -->
+    <meta property="og:url" content="/" />
+    <meta property="og:image" content="/og-image.jpg" />
+
+    <!-- OGP -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kest Studio" />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:title" content="Kest Studio | Films & Visual Storytelling" />
+    <meta property="og:description" content="KestStudioは、映像でブランドの本質を可視化するクリエイティブスタジオです。" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Kest Studio — Journey to Inspiration, Driven by Our Films." />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Kest Studio | Films & Visual Storytelling" />
+    <meta name="twitter:description" content="KestStudioは、映像でブランドの本質を可視化するクリエイティブスタジオです。" />
+    <meta name="twitter:image" content="/og-image.jpg" />
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Fonts（Vue 側の Playfair に合わせる）
+         ※ Helvetica Neue は Google Fonts に存在しないため指定から除外（OS標準／フォールバックを使用） -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Helvetica+Neue:ital,wght@0,300;0,400;0,500;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap"
       rel="stylesheet"
     />
 
