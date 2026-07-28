@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import LogoMark from '../components/LogoMark.vue';
+import LogoFull from '../components/LogoFull.vue';
 
 // --- State Management ---
 const isContactModalOpen = ref(false);
@@ -421,7 +423,10 @@ onUnmounted(() => {
 
     <header :class="['header', { 'is-scrolled': isScrolled }]">
       <div class="header-inner">
-        <div class="logo">Kest Studio</div>
+        <a href="#" class="logo-lockup" aria-label="Kest Studio トップへ">
+          <LogoMark class="logo-mark" decorative />
+          <span class="logo">Kest Studio</span>
+        </a>
         <nav class="nav">
           <a href="#shorts">Shorts</a>
           <a href="#portfolio">Works</a>
@@ -619,6 +624,7 @@ onUnmounted(() => {
     </section>
 
     <footer class="footer">
+      <LogoFull class="footer-logo" block />
       <p>&copy; {{ new Date().getFullYear() }} Kest Studio. All Rights Reserved.</p>
       <p class="footer-links">
         <button type="button" class="link" @click="openPrivacyModal">プライバシーポリシー</button>
@@ -942,6 +948,22 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .header { position: fixed; top: 0; left: 0; width: 100%; z-index: 50; transition: all 0.35s ease; padding: 20px 0; color: var(--color-ink); }
 .header.is-scrolled { background-color: rgba(247, 244, 239, 0.72); backdrop-filter: blur(14px); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08); padding: 14px 0; border-bottom: 1px solid var(--color-border); }
 .header-inner { display: flex; justify-content: space-between; align-items: center; max-width: 1440px; margin: 0 auto; padding: 0 40px; }
+/* マーク + 欧文ロゴのロックアップ */
+.logo-lockup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.logo-mark {
+  height: 42px;
+  flex-shrink: 0;
+  transition: height 0.35s ease, transform 0.35s ease;
+}
+.header.is-scrolled .logo-mark { height: 34px; }
+.logo-lockup:hover .logo-mark { transform: translateY(-2px); }
+
 .logo { font-family: var(--font-en); font-size: 1.65rem; font-weight: 600; letter-spacing: -0.01em; }
 .header.is-scrolled .logo { color: var(--color-ink); }
 .nav { display: flex; align-items: center; gap: 40px; }
@@ -1287,6 +1309,7 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 .footer { text-align: center; padding: 48px 24px 56px; color: var(--color-ink-muted); font-size: 0.85rem; }
 .footer p { margin: 0; }
 .footer-links { margin-top: 12px; }
+.footer-logo { height: 76px; color: var(--color-ink); margin-bottom: 24px; }
 
 .link {
   display: inline;
@@ -1381,6 +1404,10 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 /* --- Responsive (スマホ用) --- */
 @media (max-width: 768px) {
   .header-inner { padding: 0 24px; }
+  .logo-mark { height: 34px; }
+  .header.is-scrolled .logo-mark { height: 28px; }
+  .logo-lockup { gap: 9px; }
+  .footer-logo { height: 62px; }
   .nav { gap: 24px; }
   .nav a:not(.nav-social) { display: none; }
   .nav-social::before { display: none; }
