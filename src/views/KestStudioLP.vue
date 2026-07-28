@@ -1030,8 +1030,8 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   /* 見出し上の余白（固定ヘッダーの下） */
   --shorts-top-space: 24px;
   --shorts-bottom-space: 32px;
-  /* カード下のタイトル＋カテゴリ分の確保高さ */
-  --shorts-info-h: 76px;
+  /* カード下のタイトル（2行分）＋カテゴリ分の確保高さ */
+  --shorts-info-h: 102px;
 
   padding-top: calc(var(--kest-header-h, 80px) + var(--shorts-top-space));
   padding-bottom: var(--shorts-bottom-space);
@@ -1076,7 +1076,12 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
 
 .shorts-track-container {
   width: 100%;
-  overflow: hidden;
+  /*
+    ホバー時の浮き上がりと影がここで切れてしまうため overflow は掛けない。
+    横方向のはみ出しは .shorts-sticky 側の overflow: hidden が受け持つ。
+    （スマホでは横スクロールのため下のメディアクエリで auto に上書きする）
+  */
+  overflow: visible;
 }
 
 .shorts-track {
@@ -1092,11 +1097,6 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.short-card-wrapper:hover {
-  transform: translateY(-10px);
 }
 
 .short-card-inner {
@@ -1111,18 +1111,45 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
   background-color: transparent;
   border: 1px solid rgba(12, 12, 12, 0.06);
   box-shadow: 0 30px 100px rgba(12, 12, 12, 0.14);
-  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); 
+  /*
+    浮き上がるのはサムネイルだけ。カード全体を動かすと下のタイトルまで
+    つられて上がり、隣のカードと行が揃わなくなる（＝ホバーで崩れて見える）。
+  */
+  transition:
+    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .short-dummy-bg { width: 100%; height: 100%; background: linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.02)); }
-.short-card-wrapper:hover .short-thumb { box-shadow: 0 40px 140px rgba(12, 12, 12, 0.35); }
+
+.short-card-wrapper:hover .short-thumb,
+.short-thumb:focus-visible {
+  transform: translateY(-10px);
+  box-shadow: 0 40px 120px rgba(12, 12, 12, 0.28);
+}
 
 .short-info {
-  margin-top: 16px;
-  min-height: 60px; /* --shorts-info-h (76px) - margin-top */
+  margin-top: 18px;
   text-align: center;
 }
-.short-info h3 { font-family: var(--font-en); font-size: 1.25rem; font-weight: 600; color: var(--color-ink); margin-bottom: 6px; letter-spacing: -0.01em; }
+.short-info h3 {
+  font-family: var(--font-en);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--color-ink);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+  /*
+    タイトルは常に2行分の高さを確保する。1行のカードと2行のカードが
+    混在してもカテゴリの位置が揃い、行が崩れない。
+  */
+  min-height: 2.7em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .short-info .category { font-family: var(--font-sans); font-size: 0.78rem; color: var(--color-ink-muted); letter-spacing: 0.18em; text-transform: uppercase; }
 
 .real-video {
@@ -1470,10 +1497,13 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
     scroll-snap-align: center;
   }
   /* タップ端末では hover の浮き上がりが残るので無効化 */
-  .short-card-wrapper:hover { transform: none; }
-  .short-card-wrapper:hover .short-thumb { box-shadow: 0 30px 100px rgba(12, 12, 12, 0.14); }
+  .short-card-wrapper:hover .short-thumb {
+    transform: none;
+    box-shadow: 0 30px 100px rgba(12, 12, 12, 0.14);
+  }
 
-  .short-info { min-height: 52px; }
+  .short-info { margin-top: 14px; }
+  .short-info h3 { font-size: 1.1rem; }
 
   .modal-content--privacy { max-height: 88vh; }
   .modal-content--privacy .legal-body { padding: 48px 24px 32px; }
