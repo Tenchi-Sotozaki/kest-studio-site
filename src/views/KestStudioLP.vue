@@ -22,6 +22,7 @@ const currentVideo = ref(null); // クレジットなどを表示するため、
 const isShortModalOpen = ref(false);
 const currentShortId = ref('');
 const currentShortType = ref('');
+const currentShortPoster = ref(''); // 自前mp4のときのポスター画像
 
 // --- ★nicopi風 横スクロール用の状態 ---
 const shortVideoSection = ref(null);
@@ -72,7 +73,9 @@ const whiteSeedVideos = [
   { youtubeId: 'nNoFhJRY0HQ', title: 'White Seed', category: 'Craft Beer' },                    // 既にYouTube公開済みのショート
   { youtubeId: '0g9af-e0JQs', title: 'Looop', category: 'Craft Beer', aspect: '16 / 9' },       // WhiteSeed_Looop.mp4
   { youtubeId: 'qEcEZbq6woo', title: '3周年', category: 'Craft Beer', aspect: '16 / 9' },       // WhiteSeed_3周年.mp4
-  { youtubeId: 'xbW_1bEpEb4', title: '登山イベント', category: 'Craft Beer' },                   // WhiteSeed_登山.mp4
+  // 登山イベント：YouTube の xbW_1bEpEb4 は著作権申し立てで全世界ブロック（視聴可能国0）のため使えない。
+  // public/assets/ に mp4 とポスター画像を置いたら、下の1行を有効化する。
+  // { videoUrl: '/assets/whiteseed_tozan.mp4', thumbnail: '/assets/whiteseed_tozan_poster.jpg', title: '登山イベント', category: 'Craft Beer' },
   { youtubeId: 'p9aq_S15ak4', title: 'コラボイベント', category: 'Craft Beer' },                 // WhiteSeed_コラボイベント.mp4
   { youtubeId: '-KAXSUHozgo', title: 'Beer PM vol.2', category: 'Craft Beer' },                 // WhiteSeed_DJナイト.mp4
   { youtubeId: 'Lcwhx5_4vg4', title: '燻製イベント', category: 'Craft Beer' }                     // WhiteSeed_燻製イベント.mp4
@@ -98,7 +101,7 @@ const onWhiteSeedThumbError = (event, video) => {
 
 // 動画IDが入っているものだけを欄に出す（未アップのプレースホルダは非表示）
 const whiteSeedPublished = computed(() =>
-  whiteSeedVideos.filter((video) => video.youtubeId || video.vimeoId || video.thumbnail)
+  whiteSeedVideos.filter((video) => video.youtubeId || video.vimeoId || video.videoUrl)
 );
 
 const fontList = [
@@ -255,7 +258,12 @@ const openShortModal = (video, event) => {
   } else if (video.vimeoId) {
     currentShortId.value = video.vimeoId;
     currentShortType.value = 'vimeo';
+  } else if (video.videoUrl) {
+    // YouTube / Vimeo を使わず public/ に置いた mp4 を直接再生する場合
+    currentShortId.value = video.videoUrl;
+    currentShortType.value = 'local';
   }
+  currentShortPoster.value = video.thumbnail ?? '';
 
   isShortModalOpen.value = true;
   enterModal(event, '.modal-close-btn--short');
@@ -265,6 +273,7 @@ const closeShortModal = () => {
   isShortModalOpen.value = false;
   currentShortId.value = '';
   currentShortType.value = '';
+  currentShortPoster.value = '';
   leaveModal();
 };
 
@@ -842,6 +851,19 @@ onUnmounted(() => {
               allowfullscreen
               style="width: 100%; height: 100%;">
             </iframe>
+            <!--
+              自前ホストの mp4。playsinline が無いと iOS で勝手に全画面になる。
+              muted を付けないと自動再生がブロックされるブラウザがあるため、
+              音アリで見せたい動画は autoplay を付けずユーザー操作に任せる。
+            -->
+            <video v-else-if="currentShortType === 'local'"
+              :src="currentShortId"
+              :poster="currentShortPoster || undefined"
+              controls
+              playsinline
+              preload="metadata"
+              style="width: 100%; height: 100%; object-fit: contain; background: #0c0c0c;">
+            </video>
           </div>
         </div>
       </div>
