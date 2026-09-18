@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import LogoMark from '../components/LogoMark.vue';
 import LogoFull from '../components/LogoFull.vue';
 
@@ -57,12 +57,49 @@ const shortVideos = [
   { youtubeId: '-gjNRjWPxF4', title: '夢蔵', category: 'Short Film' },
   { youtubeId: 'XihcgtAgbD4', title: 'HOTEIYA', category: 'Sandwich Stand' },
   { youtubeId: '5SvSdn6lqN0', title: 'Gen Sekikawa', category: 'Running' },
-  { youtubeId: 'nNoFhJRY0HQ', title: 'White Seed', category: 'Craft Beer' },
   { youtubeId: 'C4zgfmj39yU', title: 'Kai Yuki', category: 'Haircut Short Film' },
   { youtubeId: 'ILTHCawTXQA', title: 'Hatate Takeru Skateboarding', category: 'Short Film' },
   { youtubeId: 'SLo4-y1plug', title: '亀仙人', category: 'Vlog' },
   { youtubeId: 'gX_AfG1kw3Y', title: '函館市水産物卸売市場', category: 'Cinematic' }
 ];
+
+// =========================================================
+// ★ White Seed（クライアントワーク）のデータ
+//   youtubeId は限定公開でも埋め込み可。空文字のものは欄に表示されない。
+//   URL が https://youtu.be/XXXX なら XXXX の部分が youtubeId。
+// =========================================================
+const whiteSeedVideos = [
+  { youtubeId: 'nNoFhJRY0HQ', title: 'White Seed', category: 'Craft Beer' },                    // 既にYouTube公開済みのショート
+  { youtubeId: '0g9af-e0JQs', title: 'Looop', category: 'Craft Beer', aspect: '16 / 9' },       // WhiteSeed_Looop.mp4
+  { youtubeId: 'qEcEZbq6woo', title: '3周年', category: 'Craft Beer', aspect: '16 / 9' },       // WhiteSeed_3周年.mp4
+  { youtubeId: 'xbW_1bEpEb4', title: '登山イベント', category: 'Craft Beer' },                   // WhiteSeed_登山.mp4
+  { youtubeId: 'p9aq_S15ak4', title: 'コラボイベント', category: 'Craft Beer' },                 // WhiteSeed_コラボイベント.mp4
+  { youtubeId: '-KAXSUHozgo', title: 'Beer PM vol.2', category: 'Craft Beer' },                 // WhiteSeed_DJナイト.mp4
+  { youtubeId: 'Lcwhx5_4vg4', title: '燻製イベント', category: 'Craft Beer' }                     // WhiteSeed_燻製イベント.mp4
+  // 未整理の候補: WhiteSeed_04_.mp4, WhiteSeed_02.mp4（ドライブに残っている）
+];
+
+/**
+ * サムネイル。
+ * 横型（16:9）カードは maxresdefault（1280x720）を使うと比率が合って高精細。
+ * 縦型カードは Shorts 欄と同じ hqdefault を使う（maxresdefault は縦動画でも
+ * 16:9 に収めた絵が返るため、9:16 のカードに入れると左右が切り落とされる）。
+ * maxres が無い動画のために、読み込み失敗時は hqdefault へ落とす。
+ */
+const whiteSeedThumb = (video) =>
+  video.aspect
+    ? `https://img.youtube.com/vi/${video.youtubeId}/maxresdefault.jpg`
+    : `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+
+const onWhiteSeedThumbError = (event, video) => {
+  const fallback = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+  if (event.target.src !== fallback) event.target.src = fallback;
+};
+
+// 動画IDが入っているものだけを欄に出す（未アップのプレースホルダは非表示）
+const whiteSeedPublished = computed(() =>
+  whiteSeedVideos.filter((video) => video.youtubeId || video.vimeoId || video.thumbnail)
+);
 
 const fontList = [
   "'Cormorant Garamond', serif",
@@ -429,6 +466,7 @@ onUnmounted(() => {
         </a>
         <nav class="nav">
           <a href="#shorts">Shorts</a>
+          <a href="#white-seed">White Seed</a>
           <a href="#portfolio">Works</a>
           <a href="#contact">Contact</a>
           
@@ -541,6 +579,65 @@ onUnmounted(() => {
           </div>
         </div>
         
+      </div>
+    </section>
+
+    <section id="white-seed" class="white-seed section">
+      <div class="container">
+        <div class="section-header fade-in-scroll">
+          <span class="sub-title">Client Work</span>
+          <h2>White Seed</h2>
+        </div>
+
+        <div class="white-seed-grid">
+          <article
+            v-for="(video, index) in whiteSeedPublished"
+            :key="index"
+            class="short-card-wrapper white-seed-card"
+            :class="{ 'white-seed-card--wide': video.aspect }"
+          >
+            <div class="short-card-inner">
+              <div
+                class="short-thumb"
+                :style="video.aspect ? { aspectRatio: video.aspect } : null"
+                role="button"
+                tabindex="0"
+                @click="(e) => openShortModal(video, e)"
+                @keydown.enter.prevent="(e) => openShortModal(video, e)"
+                @keydown.space.prevent="(e) => openShortModal(video, e)"
+                :aria-label="`${video.title}を全画面で再生する`"
+              >
+                <img
+                  v-if="video.youtubeId"
+                  :src="whiteSeedThumb(video)"
+                  class="real-video"
+                  alt="thumbnail"
+                  loading="lazy"
+                  @error="(e) => onWhiteSeedThumbError(e, video)"
+                />
+                <img
+                  v-else-if="video.thumbnail"
+                  :src="video.thumbnail"
+                  class="real-video"
+                  alt="thumbnail"
+                  loading="lazy"
+                />
+                <div v-else class="short-dummy-bg"></div>
+
+                <div class="card-overlay">
+                  <div class="play-button">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="play-icon"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="short-info">
+                <h3>{{ video.title }}</h3>
+                <span class="category">{{ video.category }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
 
@@ -1165,6 +1262,37 @@ h1, h2, h3 { margin: 0; line-height: 1.4; }
    Portfolio Grid (通常の横長映像)
 ========================================================= */
 .portfolio { padding-top: 80px; }
+/* ===== White Seed（クライアントワーク）欄 ===== */
+/*
+  Shorts 欄は横スクロール（スクロールジャック）だが、この欄は普通の縦積みグリッド。
+  カードの見た目は .short-card-wrapper 系をそのまま流用し、幅だけグリッドに合わせる。
+*/
+.white-seed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 56px 32px;
+  margin-top: 72px;
+  /*
+    縦型（9:16）と横型（16:9）が混在するので、カードは上端を揃える。
+    align-items を伸ばしたままにすると、低い横型カードの下に余白がつく。
+  */
+  align-items: start;
+}
+.white-seed-card { width: 100%; }
+
+/* 横型動画は縦カード幅だと小さすぎるので 2 カラム分使う */
+.white-seed-card--wide { grid-column: span 2; }
+
+@media (max-width: 768px) {
+  .white-seed-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 36px 16px;
+    margin-top: 44px;
+  }
+  /* スマホは 2 カラムなので、横型カードは画面幅いっぱいになる */
+  .white-seed-card--wide { grid-column: span 2; }
+}
+
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 40px 32px; margin-top: 72px; }
 .card { cursor: pointer; background: rgba(255, 255, 255, 0.55); border-radius: 18px; overflow: hidden; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.12); border: 1px solid var(--color-border); transition: transform 0.35s ease, box-shadow 0.35s ease; backdrop-filter: blur(10px); }
 .card:hover { transform: translateY(-6px); box-shadow: 0 26px 90px rgba(0, 0, 0, 0.16); }
